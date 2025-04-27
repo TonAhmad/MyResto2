@@ -1,0 +1,373 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="dbResto2Model.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Admin">
+          <Key>
+            <PropertyRef Name="admin_id" />
+          </Key>
+          <Property Name="admin_id" Type="varchar" MaxLength="10" Nullable="false" />
+          <Property Name="fullname" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="username" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="email" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="password_hash" Type="varchar" MaxLength="255" Nullable="false" />
+          <Property Name="phone_number" Type="varchar" MaxLength="15" Nullable="false" />
+          <Property Name="address" Type="text" Nullable="false" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="role" Type="varchar" MaxLength="10" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Category">
+          <Key>
+            <PropertyRef Name="categoryID" />
+          </Key>
+          <Property Name="categoryID" Type="varchar" MaxLength="10" Nullable="false" />
+          <Property Name="categoryName" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="createdAt" Type="datetime" />
+        </EntityType>
+        <EntityType Name="Product">
+          <Key>
+            <PropertyRef Name="productID" />
+          </Key>
+          <Property Name="productID" Type="varchar" MaxLength="10" Nullable="false" />
+          <Property Name="productName" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="categoryID" Type="varchar" MaxLength="10" Nullable="false" />
+          <Property Name="price" Type="decimal" Precision="10" Scale="2" Nullable="false" />
+          <Property Name="stock" Type="int" Nullable="false" />
+          <Property Name="createdAt" Type="datetime" />
+          <Property Name="imagePath" Type="nvarchar" MaxLength="255" Nullable="false" />
+        </EntityType>
+        <EntityType Name="OrderDetail">
+          <Key>
+            <PropertyRef Name="orderID" />
+            <PropertyRef Name="productID" />
+          </Key>
+          <Property Name="orderID" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="productID" Type="varchar" MaxLength="10" Nullable="false" />
+          <Property Name="quantity" Type="int" Nullable="false" />
+          <Property Name="subtotal" Type="decimal" Precision="10" Scale="2" />
+        </EntityType>
+        <EntityType Name="OrderHeader">
+          <Key>
+            <PropertyRef Name="orderID" />
+          </Key>
+          <Property Name="orderID" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="customerName" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="admin_id" Type="varchar" MaxLength="10" />
+          <Property Name="orderStatus" Type="varchar" MaxLength="10" Nullable="false" />
+          <Property Name="total" Type="money" Nullable="false" />
+          <Property Name="orderDate" Type="datetime" />
+        </EntityType>
+        <Association Name="FK__OrderDeta__order__5FB337D6">
+          <End Role="OrderHeader" Type="Self.OrderHeader" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="OrderDetail" Type="Self.OrderDetail" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="OrderHeader">
+              <PropertyRef Name="orderID" />
+            </Principal>
+            <Dependent Role="OrderDetail">
+              <PropertyRef Name="orderID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__OrderDeta__produ__60A75C0F">
+          <End Role="Product" Type="Self.Product" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="OrderDetail" Type="Self.OrderDetail" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Product">
+              <PropertyRef Name="productID" />
+            </Principal>
+            <Dependent Role="OrderDetail">
+              <PropertyRef Name="productID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__OrderHead__admin__5BE2A6F2">
+          <End Role="Admin" Type="Self.Admin" Multiplicity="0..1" />
+          <End Role="OrderHeader" Type="Self.OrderHeader" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Admin">
+              <PropertyRef Name="admin_id" />
+            </Principal>
+            <Dependent Role="OrderHeader">
+              <PropertyRef Name="admin_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__Product__categor__571DF1D5">
+          <End Role="Category" Type="Self.Category" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="Product" Type="Self.Product" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Category">
+              <PropertyRef Name="categoryID" />
+            </Principal>
+            <Dependent Role="Product">
+              <PropertyRef Name="categoryID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="dbResto2ModelStoreContainer">
+          <EntitySet Name="Admin" EntityType="Self.Admin" Schema="adm" store:Type="Tables" />
+          <EntitySet Name="Category" EntityType="Self.Category" Schema="item" store:Type="Tables" />
+          <EntitySet Name="Product" EntityType="Self.Product" Schema="item" store:Type="Tables" />
+          <EntitySet Name="OrderDetail" EntityType="Self.OrderDetail" Schema="orders" store:Type="Tables" />
+          <EntitySet Name="OrderHeader" EntityType="Self.OrderHeader" Schema="orders" store:Type="Tables" />
+          <AssociationSet Name="FK__OrderDeta__order__5FB337D6" Association="Self.FK__OrderDeta__order__5FB337D6">
+            <End Role="OrderHeader" EntitySet="OrderHeader" />
+            <End Role="OrderDetail" EntitySet="OrderDetail" />
+          </AssociationSet>
+          <AssociationSet Name="FK__OrderDeta__produ__60A75C0F" Association="Self.FK__OrderDeta__produ__60A75C0F">
+            <End Role="Product" EntitySet="Product" />
+            <End Role="OrderDetail" EntitySet="OrderDetail" />
+          </AssociationSet>
+          <AssociationSet Name="FK__OrderHead__admin__5BE2A6F2" Association="Self.FK__OrderHead__admin__5BE2A6F2">
+            <End Role="Admin" EntitySet="Admin" />
+            <End Role="OrderHeader" EntitySet="OrderHeader" />
+          </AssociationSet>
+          <AssociationSet Name="FK__Product__categor__571DF1D5" Association="Self.FK__Product__categor__571DF1D5">
+            <End Role="Category" EntitySet="Category" />
+            <End Role="Product" EntitySet="Product" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="dbResto2Model" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="Admin">
+          <Key>
+            <PropertyRef Name="admin_id" />
+          </Key>
+          <Property Name="admin_id" Type="String" MaxLength="10" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="fullname" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="username" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="email" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="password_hash" Type="String" MaxLength="255" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="phone_number" Type="String" MaxLength="15" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="address" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="role" Type="String" MaxLength="10" FixedLength="false" Unicode="false" Nullable="false" />
+          <NavigationProperty Name="OrderHeaders" Relationship="Self.FK__OrderHead__admin__5BE2A6F2" FromRole="Admin" ToRole="OrderHeader" />
+        </EntityType>
+        <EntityType Name="Category">
+          <Key>
+            <PropertyRef Name="categoryID" />
+          </Key>
+          <Property Name="categoryID" Type="String" MaxLength="10" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="categoryName" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="createdAt" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="Products" Relationship="Self.FK__Product__categor__571DF1D5" FromRole="Category" ToRole="Product" />
+        </EntityType>
+        <EntityType Name="Product">
+          <Key>
+            <PropertyRef Name="productID" />
+          </Key>
+          <Property Name="productID" Type="String" MaxLength="10" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="productName" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="categoryID" Type="String" MaxLength="10" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="price" Type="Decimal" Precision="10" Scale="2" Nullable="false" />
+          <Property Name="stock" Type="Int32" Nullable="false" />
+          <Property Name="createdAt" Type="DateTime" Precision="3" />
+          <Property Name="imagePath" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+          <NavigationProperty Name="Category" Relationship="Self.FK__Product__categor__571DF1D5" FromRole="Product" ToRole="Category" />
+          <NavigationProperty Name="OrderDetails" Relationship="Self.FK__OrderDeta__produ__60A75C0F" FromRole="Product" ToRole="OrderDetail" />
+        </EntityType>
+        <EntityType Name="OrderDetail">
+          <Key>
+            <PropertyRef Name="orderID" />
+            <PropertyRef Name="productID" />
+          </Key>
+          <Property Name="orderID" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="productID" Type="String" MaxLength="10" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="quantity" Type="Int32" Nullable="false" />
+          <Property Name="subtotal" Type="Decimal" Precision="10" Scale="2" />
+          <NavigationProperty Name="Product" Relationship="Self.FK__OrderDeta__produ__60A75C0F" FromRole="OrderDetail" ToRole="Product" />
+          <NavigationProperty Name="OrderHeader" Relationship="Self.FK__OrderDeta__order__5FB337D6" FromRole="OrderDetail" ToRole="OrderHeader" />
+        </EntityType>
+        <EntityType Name="OrderHeader">
+          <Key>
+            <PropertyRef Name="orderID" />
+          </Key>
+          <Property Name="orderID" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="customerName" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="admin_id" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="orderStatus" Type="String" MaxLength="10" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="total" Type="Decimal" Precision="19" Scale="4" Nullable="false" />
+          <Property Name="orderDate" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="Admin" Relationship="Self.FK__OrderHead__admin__5BE2A6F2" FromRole="OrderHeader" ToRole="Admin" />
+          <NavigationProperty Name="OrderDetails" Relationship="Self.FK__OrderDeta__order__5FB337D6" FromRole="OrderHeader" ToRole="OrderDetail" />
+        </EntityType>
+        <Association Name="FK__OrderHead__admin__5BE2A6F2">
+          <End Role="Admin" Type="Self.Admin" Multiplicity="0..1" />
+          <End Role="OrderHeader" Type="Self.OrderHeader" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Admin">
+              <PropertyRef Name="admin_id" />
+            </Principal>
+            <Dependent Role="OrderHeader">
+              <PropertyRef Name="admin_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__Product__categor__571DF1D5">
+          <End Role="Category" Type="Self.Category" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="Product" Type="Self.Product" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Category">
+              <PropertyRef Name="categoryID" />
+            </Principal>
+            <Dependent Role="Product">
+              <PropertyRef Name="categoryID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__OrderDeta__produ__60A75C0F">
+          <End Role="Product" Type="Self.Product" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="OrderDetail" Type="Self.OrderDetail" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Product">
+              <PropertyRef Name="productID" />
+            </Principal>
+            <Dependent Role="OrderDetail">
+              <PropertyRef Name="productID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__OrderDeta__order__5FB337D6">
+          <End Role="OrderHeader" Type="Self.OrderHeader" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="OrderDetail" Type="Self.OrderDetail" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="OrderHeader">
+              <PropertyRef Name="orderID" />
+            </Principal>
+            <Dependent Role="OrderDetail">
+              <PropertyRef Name="orderID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="dbResto2Entities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="Admins" EntityType="Self.Admin" />
+          <EntitySet Name="Categories" EntityType="Self.Category" />
+          <EntitySet Name="Products" EntityType="Self.Product" />
+          <EntitySet Name="OrderDetails" EntityType="Self.OrderDetail" />
+          <EntitySet Name="OrderHeaders" EntityType="Self.OrderHeader" />
+          <AssociationSet Name="FK__OrderHead__admin__5BE2A6F2" Association="Self.FK__OrderHead__admin__5BE2A6F2">
+            <End Role="Admin" EntitySet="Admins" />
+            <End Role="OrderHeader" EntitySet="OrderHeaders" />
+          </AssociationSet>
+          <AssociationSet Name="FK__Product__categor__571DF1D5" Association="Self.FK__Product__categor__571DF1D5">
+            <End Role="Category" EntitySet="Categories" />
+            <End Role="Product" EntitySet="Products" />
+          </AssociationSet>
+          <AssociationSet Name="FK__OrderDeta__produ__60A75C0F" Association="Self.FK__OrderDeta__produ__60A75C0F">
+            <End Role="Product" EntitySet="Products" />
+            <End Role="OrderDetail" EntitySet="OrderDetails" />
+          </AssociationSet>
+          <AssociationSet Name="FK__OrderDeta__order__5FB337D6" Association="Self.FK__OrderDeta__order__5FB337D6">
+            <End Role="OrderHeader" EntitySet="OrderHeaders" />
+            <End Role="OrderDetail" EntitySet="OrderDetails" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="dbResto2ModelStoreContainer" CdmEntityContainer="dbResto2Entities">
+          <EntitySetMapping Name="Admins">
+            <EntityTypeMapping TypeName="dbResto2Model.Admin">
+              <MappingFragment StoreEntitySet="Admin">
+                <ScalarProperty Name="admin_id" ColumnName="admin_id" />
+                <ScalarProperty Name="fullname" ColumnName="fullname" />
+                <ScalarProperty Name="username" ColumnName="username" />
+                <ScalarProperty Name="email" ColumnName="email" />
+                <ScalarProperty Name="password_hash" ColumnName="password_hash" />
+                <ScalarProperty Name="phone_number" ColumnName="phone_number" />
+                <ScalarProperty Name="address" ColumnName="address" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="role" ColumnName="role" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Categories">
+            <EntityTypeMapping TypeName="dbResto2Model.Category">
+              <MappingFragment StoreEntitySet="Category">
+                <ScalarProperty Name="categoryID" ColumnName="categoryID" />
+                <ScalarProperty Name="categoryName" ColumnName="categoryName" />
+                <ScalarProperty Name="createdAt" ColumnName="createdAt" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Products">
+            <EntityTypeMapping TypeName="dbResto2Model.Product">
+              <MappingFragment StoreEntitySet="Product">
+                <ScalarProperty Name="productID" ColumnName="productID" />
+                <ScalarProperty Name="productName" ColumnName="productName" />
+                <ScalarProperty Name="categoryID" ColumnName="categoryID" />
+                <ScalarProperty Name="price" ColumnName="price" />
+                <ScalarProperty Name="stock" ColumnName="stock" />
+                <ScalarProperty Name="createdAt" ColumnName="createdAt" />
+                <ScalarProperty Name="imagePath" ColumnName="imagePath" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="OrderDetails">
+            <EntityTypeMapping TypeName="dbResto2Model.OrderDetail">
+              <MappingFragment StoreEntitySet="OrderDetail">
+                <ScalarProperty Name="orderID" ColumnName="orderID" />
+                <ScalarProperty Name="productID" ColumnName="productID" />
+                <ScalarProperty Name="quantity" ColumnName="quantity" />
+                <ScalarProperty Name="subtotal" ColumnName="subtotal" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="OrderHeaders">
+            <EntityTypeMapping TypeName="dbResto2Model.OrderHeader">
+              <MappingFragment StoreEntitySet="OrderHeader">
+                <ScalarProperty Name="orderID" ColumnName="orderID" />
+                <ScalarProperty Name="customerName" ColumnName="customerName" />
+                <ScalarProperty Name="admin_id" ColumnName="admin_id" />
+                <ScalarProperty Name="orderStatus" ColumnName="orderStatus" />
+                <ScalarProperty Name="total" ColumnName="total" />
+                <ScalarProperty Name="orderDate" ColumnName="orderDate" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>
