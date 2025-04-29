@@ -1,0 +1,90 @@
+﻿body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 250px;
+    min-height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    overflow-y: auto;
+}
+
+    .sidebar .nav-link {
+        padding: 12px;
+        font-size: 16px;
+    }
+
+        .sidebar .nav-link:hover {
+            background-color: #444;
+            border-radius: 5px;
+        }
+
+.content {
+    margin-left: 260px; /* Sesuaikan dengan lebar sidebar */
+    width: calc(100% - 260px);
+    padding: 20px;
+}
+
+input, select, button {
+    max-width: 300px;
+}
+
+/*dashboard*/
+.dashboard-card {
+    margin-bottom: 20px;
+}
+
+/* Report Styling */
+/* Container untuk membuat tabel bisa di-scroll */
+.scrollable-table {
+    max-height: 300px; /* Sesuaikan tinggi maksimal */
+    overflow-y: auto; /* Aktifkan scroll */
+    border: 1px solid #ddd; /* Tambahkan border agar lebih rapi */
+    border-radius: 5px;
+}
+
+/* Styling GridView agar tetap bersih */
+.table-striped {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+    .table-striped th {
+        background-color: #f8f9fa; /* Warna header agar tetap bersih */
+        font-weight: bold;
+        text-align: left;
+        padding: 10px;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .table-striped td {
+        padding: 10px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    /* Hover effect supaya lebih interaktif */
+    .table-striped tr:hover {
+        background-color: #f1f1f1;
+    }
+
+/* Styling untuk Filter */
+.row.mb-3 {
+    display: flex;
+    align-items: center;
+}
+
+.form-select, .form-control {
+    border-radius: 5px;
+    padding: 8px;
+    font-size: 16px;
+}
+
+.btn-primary {
+    font-weight: bold;
+    padding: 8px 16px;
+}

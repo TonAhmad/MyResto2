@@ -1,0 +1,75 @@
+﻿@{
+    ViewBag.Title = "Dashboard";
+    Layout = "~/Views/Layout/AdminLayout.cshtml";
+}
+
+<div class="container">
+    <h1 class="mb-4">Admin Dashboard</h1>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary dashboard-card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Kategori</h5>
+                    <p class="card-text">
+                        <span class="h3">@ViewBag.TotalCategories</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success dashboard-card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Produk</h5>
+                    <p class="card-text">
+                        <span class="h3">@ViewBag.TotalProducts</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning dashboard-card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Transaksi</h5>
+                    <p class="card-text">
+                        <span class="h3">@ViewBag.TotalTransactions</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger dashboard-card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Pendapatan</h5>
+                    <p class="card-text">
+                        <span class="h3">@ViewBag.TotalRevenue</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="mt-4">Produk dengan Stok Rendah</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Nama Produk</th>
+                <th>Kategori</th>
+                <th>Stok</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null)
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.productName</td>
+                        <td>@item.categoryName</td>
+                        <td>@item.stock</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+

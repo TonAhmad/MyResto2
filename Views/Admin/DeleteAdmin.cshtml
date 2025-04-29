@@ -1,0 +1,76 @@
+﻿
+@model MyResto2.Controllers.Admin
+
+@{
+    ViewBag.Title = "Hapus Admin/Cashier";
+    Layout = "~/Views/Layout/AdminLayout.cshtml";
+}
+
+<div class="card shadow">
+    <div class="card-header bg-danger text-white">
+        <h4>Konfirmasi Hapus Admin/Cashier</h4>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> Apakah Anda yakin ingin menghapus admin/cashier ini?
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <table class="table table-bordered">
+                    <tr>
+                        <th>ID</th>
+                        <td>@Model.admin_id</td>
+                    </tr>
+                    <tr>
+                        <th>Nama Lengkap</th>
+                        <td>@Model.fullname</td>
+                    </tr>
+                    <tr>
+                        <th>Username</th>
+                        <td>@Model.username</td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>@Model.email</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Nomor Telepon</th>
+                        <td>@Model.phone_number</td>
+                    </tr>
+                    <tr>
+                        <th>Alamat</th>
+                        <td>@Model.address</td>
+                    </tr>
+                    <tr>
+                        <th>Role</th>
+                        <td><span class="badge @(Model.role == "admin" ? "bg-primary" : "bg-success")">@Model.role</span></td>
+                    </tr>
+                    <tr>
+                        <th>Tanggal Dibuat</th>
+                        <td>@(Model.created_at.HasValue ? Model.created_at.Value.ToString("dd MMMM yyyy") : "-")</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        @using (Html.BeginForm("DeleteAdminConfirmed", "Admin", new { id = Model.admin_id }, FormMethod.Post, new { @class = "form" }))
+        {
+            @Html.AntiForgeryToken()
+            
+            <div class="form-group d-flex justify-content-between">
+                <a href="@Url.Action("ManageCashier", "Admin")" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Kembali
+                </a>
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Hapus
+                </button>
+            </div>
+        }
+    </div>
+</div>
+

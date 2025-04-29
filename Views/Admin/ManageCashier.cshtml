@@ -1,0 +1,78 @@
+﻿
+@{
+    ViewBag.Title = "Manage Cashier & Admin";
+    Layout = "~/Views/Layout/AdminLayout.cshtml";
+}
+@model IEnumerable<MyResto2.Controllers.Admin>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2>Manage Cashier & Admin</h2>
+        </div>
+        <div class="col-md-6 text-right">
+            <a href="@Url.Action("AddAdmin", "Admin")" class="btn btn-primary">
+                <i class="fa fa-plus"></i> Add New Admin/Cashier
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h5 class="m-0">Admin & Cashier List</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="adminTable">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Full Name</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Role</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.admin_id</td>
+                                <td>@item.fullname</td>
+                                <td>@item.username</td>
+                                <td>@item.email</td>
+                                <td>@item.phone_number</td>
+                                <td>
+                                    <span class="badge @(item.role == "admin" ? "badge-danger" : "badge-success")">
+                                        @item.role
+                                    </span>
+                                </td>
+                                <td>@(item.created_at.HasValue ? item.created_at.Value.ToString("dd/MM/yyyy") : "-")</td>
+                                <td>
+                                    <a href="@Url.Action("EditAdmin", "Admin", new { id = item.admin_id })" class="btn btn-sm btn-warning">
+                                        <i class="fa fa-edit"></i> Edit
+                                    </a>
+                                    <a href="@Url.Action("DeleteAdmin", "Admin", new { id = item.admin_id })" class="btn btn-sm btn-danger">
+                                        <i class="fa fa-trash"></i> Delete
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#adminTable').DataTable();
+        });
+    </script>
+}
+

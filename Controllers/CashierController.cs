@@ -6,10 +6,10 @@ using System.Web.Mvc;
 
 namespace MyResto2.Controllers
 {
-    public class CustController : Controller
+    public class CashierController : Controller
     {
         static dbResto2Entities db = new dbResto2Entities();
-        public ActionResult Home()
+        public ActionResult ProcessPayment()
         {
             return View();
         }

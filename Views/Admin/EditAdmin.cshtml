@@ -1,0 +1,86 @@
+﻿
+@model MyResto2.Controllers.Admin
+
+@{
+    ViewBag.Title = "Edit Admin/Cashier";
+    Layout = "~/Views/Layout/AdminLayout.cshtml";
+}
+
+<div class="card shadow">
+    <div class="card-header bg-primary text-white">
+        <h4>Edit Data Admin/Cashier</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("EditAdmin", "Admin", FormMethod.Post, new { @class = "form" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.admin_id)
+            @Html.HiddenFor(model => model.created_at)
+            
+            <div class="form-group mb-3">
+                @Html.LabelFor(model => model.fullname, "Nama Lengkap", new { @class = "form-label" })
+                @Html.TextBoxFor(model => model.fullname, new { @class = "form-control", required = "required" })
+                @Html.ValidationMessageFor(model => model.fullname, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group mb-3">
+                @Html.LabelFor(model => model.username, "Username", new { @class = "form-label" })
+                @Html.TextBoxFor(model => model.username, new { @class = "form-control", required = "required" })
+                @Html.ValidationMessageFor(model => model.username, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group mb-3">
+                @Html.LabelFor(model => model.email, "Email", new { @class = "form-label" })
+                @Html.TextBoxFor(model => model.email, new { @class = "form-control", type = "email", required = "required" })
+                @Html.ValidationMessageFor(model => model.email, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group mb-3">
+                @Html.LabelFor(model => model.password_hash, "Password", new { @class = "form-label" })
+                <div class="input-group">
+                    @Html.PasswordFor(model => model.password_hash, new { @class = "form-control" })
+                    <div class="input-group-append">
+                        <span class="input-group-text">Kosongkan jika tidak ingin mengubah password</span>
+                    </div>
+                </div>
+                @Html.ValidationMessageFor(model => model.password_hash, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group mb-3">
+                @Html.LabelFor(model => model.phone_number, "Nomor Telepon", new { @class = "form-label" })
+                @Html.TextBoxFor(model => model.phone_number, new { @class = "form-control", required = "required" })
+                @Html.ValidationMessageFor(model => model.phone_number, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group mb-3">
+                @Html.LabelFor(model => model.address, "Alamat", new { @class = "form-label" })
+                @Html.TextAreaFor(model => model.address, new { @class = "form-control", rows = "3", required = "required" })
+                @Html.ValidationMessageFor(model => model.address, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group mb-3">
+                @Html.LabelFor(model => model.role, "Role", new { @class = "form-label" })
+                @Html.DropDownListFor(model => model.role, new List<SelectListItem>
+                {
+                    new SelectListItem { Text = "Admin", Value = "admin" },
+                    new SelectListItem { Text = "Cashier", Value = "cashier" }
+                }, "-- Pilih Role --", new { @class = "form-control", required = "required" })
+                @Html.ValidationMessageFor(model => model.role, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group d-flex justify-content-between">
+                <a href="@Url.Action("ManageCashier", "Admin")" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Kembali
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Update
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @*@Scripts.Render("~/bundles/jqueryval")*@
+}
+
