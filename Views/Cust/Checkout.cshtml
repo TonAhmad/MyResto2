@@ -1,8 +1,154 @@
 ﻿
+@model MyResto2.Models.OrderViewModel
+
 @{
     ViewBag.Title = "Checkout";
     Layout = "~/Views/Layout/HomeLayout.cshtml";
 }
 
-<h2>Checkout</h2>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="checkout-card shadow">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-shopping-cart me-2"></i> Checkout Pesanan</h3>
+                </div>
+                <div class="card-body">
+                    @using (Html.BeginForm("ConfirmCheckout", "Cust", FormMethod.Post, new { @id = "checkoutForm", @class = "needs-validation", @novalidate = "novalidate" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        
+                        <!-- Form Nama Pelanggan -->
+                        <div class="mb-4">
+                            <label for="customerName" class="form-label fw-bold">Nama Pelanggan</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                <input type="text" id="customerName" name="customerName" class="form-control form-control-lg" placeholder="Masukkan nama Anda" required />
+                            </div>
+                            <div class="invalid-feedback">
+                                Silakan masukkan nama Anda.
+                            </div>
+                        </div>
+
+                        <!-- Tabel Cart -->
+                        <h4 class="mt-4 mb-3 fw-bold"><i class="fas fa-utensils me-2"></i> Pesanan Anda</h4>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Produk</th>
+                                        <th class="text-center">Harga</th>
+                                        <th class="text-center">Jumlah</th>
+                                        <th class="text-end">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cartTable">
+                                    <!-- Cart akan diisi dengan JavaScript -->
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-bold">Total:</td>
+                                        <td class="text-end fw-bold text-primary fs-5">Rp <span id="checkoutTotal">0</span></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Hidden fields to store cart data -->
+                        <input type="hidden" id="cartData" name="cartData" />
+                        <input type="hidden" id="totalAmount" name="totalAmount" />
+
+                        <!-- Tombol Konfirmasi Checkout -->
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check-circle me-2"></i> Konfirmasi Checkout
+                            </button>
+                            <a href="@Url.Action("Menu", "Cust")" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i> Kembali ke Menu
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Ambil cart dari localStorage
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        console.log(cart); // Debugging untuk melihat isi cart
+
+        function formatCurrency(amount) {
+            return parseInt(amount).toLocaleString();
+        }
+
+        function loadCart() {
+            let cartTable = document.getElementById("cartTable");
+            let totalElement = document.getElementById("checkoutTotal");
+            cartTable.innerHTML = "";
+            let total = 0;
+
+            if (cart.length === 0) {
+                cartTable.innerHTML = '<tr><td colspan="4" class="text-center py-4"><i class="fas fa-shopping-basket fa-2x mb-3 text-muted"></i><p class="text-muted">Keranjang belanja kosong</p></td></tr>';
+                document.querySelector('button[type="submit"]').disabled = true;
+                return;
+            }
+
+            cart.forEach(item => {
+                let itemTotal = item.price * item.quantity;
+                total += itemTotal;
+
+                cartTable.innerHTML += `
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <strong>${item.name}</strong>
+                        </div>
+                    </td>
+                    <td class="text-center">Rp ${formatCurrency(item.price)}</td>
+                    <td class="text-center">${item.quantity}</td>
+                    <td class="text-end">Rp ${formatCurrency(itemTotal)}</td>
+                </tr>
+                `;
+            });
+
+            totalElement.innerText = formatCurrency(total);
+            
+            // Store cart data in hidden fields for form submission
+            document.getElementById('cartData').value = JSON.stringify(cart);
+            document.getElementById('totalAmount').value = total;
+        }
+
+        // Form validation
+        (function() {
+            'use strict';
+            
+            // Fetch all forms we want to apply validation to
+            var forms = document.querySelectorAll('.needs-validation');
+            
+            // Loop over them and prevent submission
+            Array.prototype.slice.call(forms).forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (cart.length === 0) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        alert('Keranjang belanja kosong. Silakan tambahkan produk terlebih dahulu.');
+                        return false;
+                    }
+                    
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
+
+        document.addEventListener("DOMContentLoaded", loadCart);
+    </script>
+}
 

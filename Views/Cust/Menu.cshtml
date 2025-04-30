@@ -1,78 +1,113 @@
 ﻿
+@model List<MyResto2.Controllers.Product>
+
 @{
     ViewBag.Title = "Menu";
     Layout = "~/Views/Layout/HomeLayout.cshtml";
 }
 
-<div class="container mt-4">
-    <h2 class="text-center">Menu</h2>
-    <div class="row">
-        <asp:Repeater ID="rptCategories" runat="server">
-            <ItemTemplate>
-                <div class="col-auto">
-                    <a href="#cat<%# Eval(" categoryID") %>
-                        " class="btn btn-outline-primary mx-1 category-btn">
-                        <%# Eval("categoryName") %>
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h2 class="section-title">Our Menu</h2>
+            <p class="text-muted">Discover our delicious selection of food and beverages</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-center flex-wrap">
+            @if (ViewBag.Categories != null)
+            {
+                <a href="#all" class="btn btn-outline-primary mx-1 category-btn">
+                    <i class="fas fa-th-list me-1"></i> All
+                </a>
+                foreach (var category in ViewBag.Categories)
+                {
+                    <a href="#cat@(category.categoryID)" class="btn btn-outline-primary mx-1 category-btn">
+                        <i class="fas fa-tag me-1"></i> @category.categoryName
                     </a>
+                }
+            }
+        </div>
+    </div>
+
+    <div class="menu-container">
+        <!-- Left Side: Product List -->
+        <div class="product-container">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var product in Model)
+                {
+                    <div id="cat@(product.categoryID)" class="product-card @(product.stock == 0 ? "out-of-stock" : "")">
+                        <!-- Product Image -->
+                        <div class="product-image">
+                            <img src="@Url.Content(product.imagePath)" alt="@product.productName">
+                        </div>
+
+                        <!-- Product Details -->
+                        <div class="product-details">
+                            <h5 class="product-title">@product.productName</h5>
+                            <p class="product-category">
+                                <i class="fas fa-tag me-1"></i> @product.Category.categoryName
+                            </p>
+                            <p class="product-price">
+                                <i class="fas fa-money-bill-wave me-1"></i> Rp @string.Format("{0:N0}", product.price)
+                            </p>
+                            <p class="product-stock">
+                                <i class="fas fa-cubes me-1"></i> Stok: @product.stock
+                            </p>
+
+                            <button class="btn btn-primary add-to-cart"
+                                    onclick="addToCart('@product.productID', '@product.productName', @product.price)"
+                                    @(product.stock == 0 ? "disabled" : "")>
+                                <i class="fas fa-cart-plus me-1"></i> Tambah ke Keranjang
+                            </button>
+
+                            @if (product.stock == 0)
+                            {
+                                <span class="badge bg-danger ms-2">Stok Habis</span>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> Tidak ada produk yang tersedia saat ini.
                 </div>
-            </ItemTemplate>
-        </asp:Repeater>
+            }
+        </div>
 
-        <div class="menu-container">
-            <!-- Bagian Kiri: Daftar Produk -->
-            <div class="product-container">
-                <div class="row">
-                    <asp:Repeater ID="rptProducts" runat="server">
-                        <ItemTemplate>
-                            <div id="cat<%# Eval(" categoryID") %>
-                                " class="col-12 mb-3">
-                                <div class="product-card <%# Convert.ToInt32(Eval(" stock"))= =0 ? "out-of-stock" : "" %>
-                                    ">
-                                    <!-- Gambar Produk -->
-                                    <div class="product-image">
-                                        <img src='<%# Eval("imagePath") %>' alt="Product Image">
-                                    </div>
-
-                                    <!-- Deskripsi Produk -->
-                                    <div class="product-details">
-                                        <h5 class="card-title"><%# Eval("productName") %></h5>
-                                        <p class="card-text"><strong>Category:</strong> <%# Eval("categoryName") %></p>
-                                        <p class="card-text">Harga: <strong>Rp <%# Eval("price", "{0:N0}") %></strong></p>
-                                        <p class="card-text"><strong>Stok:</strong> <%# Eval("stock") %></p>
-
-                                        <button class="btn btn-primary add-to-cart"
-                                                onclick="addToCart('<%# Eval(" productID") %>
-                                            ', '<%# Eval("productName") %>', <%# Eval("price") %>)"
-                                            <%# Convert.ToInt32(Eval("stock")) == 0 ? "disabled" : "" %>>
-                                            Tambah Produk
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </ItemTemplate>
-
-                    </asp:Repeater>
+        <!-- Right Side: Cart -->
+        <div class="cart-container">
+            <h4><i class="fas fa-shopping-cart me-2"></i> Keranjang Anda</h4>
+            <div id="cartItems" class="mb-3">
+                <!-- Cart items will be populated by JavaScript -->
+                <div class="text-center text-muted py-3">
+                    <i class="fas fa-shopping-basket fa-2x mb-2"></i>
+                    <p>Keranjang belanja kosong</p>
                 </div>
             </div>
-            <!-- Bagian Kanan: Cart -->
-            <form id="checkout" runat="server">
-                <div class="cart-container">
-                    <h4>Keranjang Anda</h4>
-                    <div id="cartItems"></div>
-                    <p><strong>Total: Rp <span id="totalPrice">0</span></strong></p>
-                    <!-- Tombol Checkout -->
-                    <div class="text-center mt-3">
-                        <asp:Button ID="btnCheckout" runat="server" Text="Checkout" CssClass="btn btn-success" OnClientClick="saveCartAndRedirect(); return false;" />
-                    </div>
-
-                </div>
-            </form>
+            <div class="d-flex justify-content-between align-items-center py-3 border-top">
+                <span class="fw-bold">Total:</span>
+                <span class="fw-bold text-warning fs-5">Rp <span id="totalPrice">0</span></span>
+            </div>
+            <!-- Checkout Button -->
+            <div class="d-grid gap-2 mt-3">
+                <button id="btnCheckout" class="btn btn-success" onclick="saveCartAndRedirect(); return false;">
+                    <i class="fas fa-check-circle me-1"></i> Checkout
+                </button>
+                <button class="btn btn-outline-secondary" onclick="clearCart(); return false;">
+                    <i class="fas fa-trash me-1"></i> Kosongkan Keranjang
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
-<script>
+@section Scripts {
+    <script>
     let cart = {};
 
     function addToCart(productID, productName, price) {
@@ -80,13 +115,13 @@
 
         $.ajax({
             type: "POST",
-            url: "../ProductService.aspx/GetProductStock",
+            url: "@Url.Action("GetProductStock", "Cust")",
             data: JSON.stringify({ productID: productID }),
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: function (response) {
-                console.log("Stock received:", response.d); // Debug log
-                let stock = response.d; // Pastikan ini adalah angka
+                console.log("Stock received:", response); // Debug log
+                let stock = response; // Pastikan ini adalah angka
                 let currentQuantity = cart[productID] ? cart[productID].quantity : 0;
 
                 if (stock > 0 && currentQuantity < stock) {
@@ -115,7 +150,6 @@
         });
     }
 
-
     function updateProductStatus(productID, stock) {
         if (stock === 0) {
             let productCard = document.querySelector(`#cat${productID} .product-card`);
@@ -129,7 +163,6 @@
             }
         }
     }
-
 
     function updateCart() {
         let cartContainer = document.getElementById("cartItems");
@@ -178,19 +211,8 @@
         }));
 
         localStorage.setItem("cart", JSON.stringify(cartArray));
-        window.location.href = "Checkout.aspx";
-
-        fetch("Checkout.aspx?saveCart=1", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(cartArray),
-        }).then(response => {
-            if (response.ok) {
-                localStorage.removeItem("cart");
-                window.location.href = "Checkout.aspx";
-            }
-        }).catch(error => console.error("Error:", error));
+        window.location.href = "@Url.Action("Checkout", "Cust")";
     }
-
-</script>
+    </script>
+}
 

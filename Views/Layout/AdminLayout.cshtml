@@ -7,35 +7,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link href="~/Content/AdminStyle.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="icon" type="image/png" sizes="64x64" href="/ProductImages/logo.png">
 </head>
 <body>
     <div class="d-flex">
         <!-- Sidebar -->
-        <nav class="sidebar bg-dark text-white p-3">
-            <h2 class="text-center">Admin Panel</h2>
-            <div class="text-center mb-3">
-                <h5>👤 <span class="text-warning">@ViewBag.Username</span></h5>
+        <nav class="sidebar bg-dark text-white">
+            <div class="p-3 text-center">
+                <h4 class="mb-0">MyResto Admin</h4>
+                <small class="text-muted">Restaurant Management System</small>
             </div>
-            <ul class="nav flex-column">
-                <li class="nav-item">@Html.ActionLink("📊 Dashboard", "Dashboard", "Admin", null, new { @class = "nav-link text-white" })</li>
-                <li class="nav-item">@Html.ActionLink("🍽 Kelola Produk", "ManageProducts", "Admin", null, new { @class = "nav-link text-white" })</li>
-                <li class="nav-item">@Html.ActionLink("👨‍💼 Kelola Cashier", "ManageCashier", "Admin", null, new { @class = "nav-link text-white" })</li>
-                <li class="nav-item">@Html.ActionLink("📜 Laporan", "Reports", "Admin", null, new { @class = "nav-link text-white" })</li>
-                <li class="nav-item">@Html.ActionLink("🚪 Logout", "Logout", "Login", null, new { @class = "nav-link text-danger" })</li>
+            
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h6 class="text-center mb-0">@ViewBag.Username</h6>
+                <p class="text-center text-muted small mb-0">Administrator</p>
+            </div>
+            
+            <ul class="nav flex-column px-3">
+                <li class="nav-item">
+                    <a href="@Url.Action("Dashboard", "Admin")" class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "text-white")">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="@Url.Action("ManageProducts", "Admin")" class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "ManageProducts" || ViewContext.RouteData.Values["Action"].ToString().Contains("Category") || ViewContext.RouteData.Values["Action"].ToString().Contains("Product") ? "active" : "text-white")">
+                        <i class="fas fa-utensils"></i> Kelola Produk
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="@Url.Action("ManageCashier", "Admin")" class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "ManageCashier" || ViewContext.RouteData.Values["Action"].ToString().Contains("Admin") ? "active" : "text-white")">
+                        <i class="fas fa-users"></i> Kelola Cashier
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="@Url.Action("Reports", "Admin")" class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Reports" ? "active" : "text-white")">
+                        <i class="fas fa-chart-bar"></i> Laporan
+                    </a>
+                </li>
+                <li class="nav-item mt-4">
+                    <a href="@Url.Action("Logout", "Login")" class="nav-link text-danger">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </li>
             </ul>
         </nav>
 
         <!-- Main Content -->
         <div class="content p-4">
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb bg-white p-3 rounded shadow-sm">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Dashboard", "Admin")">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@ViewBag.Title</li>
+                </ol>
+            </nav>
+            
             @RenderBody()
         </div>
     </div>
-    @RenderSection("Scripts", required: false)
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script src="~/Scripts/jquery.validate.min.js"></script>
     <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

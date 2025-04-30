@@ -1,8 +1,121 @@
 ﻿
+@model MyResto2.Controllers.OrderHeader
+
 @{
-    ViewBag.Title = "SuccessOrder";
+    ViewBag.Title = "Konfirmasi Pesanan";
     Layout = "~/Views/Layout/HomeLayout.cshtml";
 }
 
-<h2>SuccessOrder</h2>
+<div class="container mt-5 text-center">
+    <h2>Pesanan Berhasil!</h2>
+    <p>
+        Terima kasih <strong>@Model.customerName</strong> telah melakukan pemesanan.
+    </p>
+
+    <div class="container mt-5">
+        <h3 class="text-center">Rincian Pesanan</h3>
+        <div class="order-summary">
+            <p class="order-info">
+                <strong>Order ID:</strong>
+                @Model.orderID
+            </p>
+            <p class="order-info">
+                <strong>Nama:</strong>
+                @Model.customerName
+            </p>
+
+            <div class="order-item header">
+                <span class="item-name">Nama Barang</span>
+                <span class="item-qty">Jumlah</span>
+                <span class="item-price">Harga</span>
+            </div>
+
+            @foreach (var item in Model.OrderDetails)
+            {
+                <div class="order-item">
+                    <span class="item-name">@item.Product.productName</span>
+                    <span class="item-qty">@item.quantity</span>
+                    <span class="item-price">Rp @string.Format("{0:N0}", item.subtotal)</span>
+                </div>
+            }
+
+            <div class="order-total">
+                Total: Rp @string.Format("{0:N0}", Model.total)
+            </div>
+        </div>
+    </div>
+    <p class="text-danger mt-3"><strong>Tunjukkan halaman ini ke kasir jika belum terkonfirmasi!</strong></p>
+    <a href="@Url.Action("Menu", "Cust")" class="btn btn-primary">Kembali ke Menu</a>
+    <button onclick="window.print()" class="btn btn-secondary">Cetak Struk</button>
+</div>
+
+<style type="text/css">
+    .order-summary {
+        max-width: 400px; /* Ukuran card agar proporsional */
+        margin: 20px auto;
+        padding: 15px;
+        border-radius: 8px;
+        background: #f8f9fa;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .order-info {
+        text-align: left; /* Order ID dan Nama rata kiri */
+        font-size: 14px;
+        margin: 5px 0;
+    }
+
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+    }
+
+    .order-item.header {
+        font-weight: bold;
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 8px;
+    }
+
+    .item-name {
+        flex: 2;
+        text-align: left; /* Nama barang rata kiri */
+    }
+
+    .item-qty, .item-price {
+        flex: 1;
+        text-align: right;
+    }
+
+    .order-total {
+        margin-top: 10px;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: right;
+        border-top: 2px solid #ddd;
+        padding-top: 8px;
+    }
+
+    @@media print {
+        .btn {
+            display: none;
+        }
+        body {
+            padding: 0;
+            margin: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 100%;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Clear cart after successful order
+        localStorage.removeItem("cart");
+    </script>
+}
+
 

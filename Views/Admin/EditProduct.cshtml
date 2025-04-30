@@ -1,0 +1,111 @@
+﻿
+@model MyResto2.Controllers.Product
+
+@{
+    ViewBag.Title = "Edit Product";
+    Layout = "~/Views/Layout/AdminLayout.cshtml";
+}
+
+<div class="card shadow">
+    <div class="card-header bg-primary text-white">
+        <h4>Edit Product</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("EditProduct", "Admin", FormMethod.Post, new { @class = "form", enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.productID)
+            @Html.HiddenFor(model => model.createdAt)
+            @Html.HiddenFor(model => model.imagePath)
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        @Html.LabelFor(model => model.productName, "Product Name", new { @class = "form-label" })
+                        @Html.TextBoxFor(model => model.productName, new { @class = "form-control", required = "required" })
+                        @Html.ValidationMessageFor(model => model.productName, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group mb-3">
+                        @Html.LabelFor(model => model.categoryID, "Category", new { @class = "form-label" })
+                        <select name="categoryID" class="form-control" required>
+                            @foreach (var category in ViewBag.Categories)
+                            {
+                                <option value="@category.categoryID" @(category.categoryID == Model.categoryID ? "selected" : "")>@category.categoryName</option>
+                            }
+                        </select>
+                        @Html.ValidationMessageFor(model => model.categoryID, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group mb-3">
+                        @Html.LabelFor(model => model.price, "Price", new { @class = "form-label" })
+                        @Html.EditorFor(model => model.price, new { htmlAttributes = new { @class = "form-control", min = "0", required = "required" } })
+                        @Html.ValidationMessageFor(model => model.price, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group mb-3">
+                        @Html.LabelFor(model => model.stock, "Stock", new { @class = "form-label" })
+                        @Html.TextBoxFor(model => model.stock, new { @class = "form-control", type = "number", min = "0", required = "required" })
+                        @Html.ValidationMessageFor(model => model.stock, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        @Html.LabelFor(model => model.description, "Description", new { @class = "form-label" })
+                        @Html.TextAreaFor(model => model.description, new { @class = "form-control", rows = "4", required = "required" })
+                        @Html.ValidationMessageFor(model => model.description, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label">Current Image</label>
+                        <div class="border p-2 text-center mb-2">
+                            <img src="@Url.Content(Model.imagePath)" alt="@Model.productName" style="max-width: 100%; max-height: 150px;" />
+                        </div>
+                        
+                        <label for="productImage" class="form-label">Change Image (optional)</label>
+                        <input type="file" name="productImage" id="productImage" class="form-control" accept="image/*" />
+                        <small class="text-muted">Upload a new image to replace the current one</small>
+                    </div>
+                    
+                    <div class="mt-3" id="imagePreview" style="display: none;">
+                        <label class="form-label">New Image Preview</label>
+                        <div class="border p-2 text-center">
+                            <img id="preview" src="#" alt="Preview" style="max-width: 100%; max-height: 150px;" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group d-flex justify-content-between mt-4">
+                <a href="@Url.Action("ManageProducts", "Admin")" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Update
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Image preview
+            $("#productImage").change(function() {
+                if (this.files && this.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#preview').attr('src', e.target.result);
+                        $('#imagePreview').show();
+                    }
+                    reader.readAsDataURL(this.files[0]);
+                } else {
+                    $('#imagePreview').hide();
+                }
+            });
+        });
+    </script>
+}
+

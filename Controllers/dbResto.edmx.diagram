@@ -14,6 +14,7 @@
         <AssociationConnector Association="dbResto2Model.FK__Product__categor__571DF1D5" ManuallyRouted="false" />
         <AssociationConnector Association="dbResto2Model.FK__OrderDeta__produ__60A75C0F" ManuallyRouted="false" />
         <AssociationConnector Association="dbResto2Model.FK__OrderDeta__order__5FB337D6" ManuallyRouted="false" />
+        <EntityTypeShape EntityType="dbResto2Model.sysdiagram" Width="1.5" PointX="7.25" PointY="4.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

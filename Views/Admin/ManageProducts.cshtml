@@ -1,8 +1,170 @@
 ﻿
 @{
-    ViewBag.Title = "ManageProducts";
+    ViewBag.Title = "Manage Products";
     Layout = "~/Views/Layout/AdminLayout.cshtml";
 }
 
-<h2>ManageProducts</h2>
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-utensils me-2"></i>Product Management
+            </h2>
+        </div>
+    </div>
+
+    <!-- Categories Section -->
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-folder me-2"></i>Manage Categories</h5>
+                    <a href="@Url.Action("AddCategory", "Admin")" class="btn btn-light">
+                        <i class="fas fa-plus"></i> Add New Category
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="categoryTable">
+                            <thead>
+                                <tr>
+                                    <th>Category ID</th>
+                                    <th>Category Name</th>
+                                    <th>Created At</th>
+                                    <th>Products Count</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var category in ViewBag.Categories)
+                                {
+                                    <tr>
+                                        <td>@category.categoryID</td>
+                                        <td>@category.categoryName</td>
+                                        <td>
+                                            @{
+                                                var createdDate = category.createdAt;
+                                                if (createdDate != null)
+                                                {
+                                                    @createdDate.ToString("dd/MM/yyyy HH:mm")
+                                                }
+                                                else
+                                                {
+                                                    @:- 
+                                                }
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">@category.Products.Count</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="@Url.Action("EditCategory", "Admin", new { id = category.categoryID })" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                <a href="@Url.Action("DeleteCategory", "Admin", new { id = category.categoryID })" class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Section -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-utensils me-2"></i>Manage Products</h5>
+                    <a href="@Url.Action("AddProduct", "Admin")" class="btn btn-light">
+                        <i class="fas fa-plus"></i> Add New Product
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="productTable">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Product ID</th>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Stock</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var product in ViewBag.Products)
+                                {
+                                    <tr>
+                                        <td class="text-center">
+                                            <img src="@Url.Content(product.imagePath)" alt="@product.productName" class="img-thumbnail" style="max-width: 120px; max-height: 120px;" />
+                                        </td>
+                                        <td>@product.productID</td>
+                                        <td>@product.productName</td>
+                                        <td>
+                                            <span class="badge bg-primary">@product.Category.categoryName</span>
+                                        </td>
+                                        <td>Rp @string.Format("{0:N0}", product.price)</td>
+                                        <td>
+                                            <span class="badge @(product.stock < 10 ? "bg-danger" : "bg-success")">
+                                                @product.stock
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @{
+                                                var createdDate = product.createdAt;
+                                                if (createdDate != null)
+                                                {
+                                                    @createdDate.ToString("dd/MM/yyyy HH:mm")
+                                                }
+                                                else
+                                                {
+                                                    @:- 
+                                                }
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="@Url.Action("EditProduct", "Admin", new { id = product.productID })" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                <a href="@Url.Action("DeleteProduct", "Admin", new { id = product.productID })" class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#categoryTable').DataTable({
+                "order": [[0, "asc"]]
+            });
+            
+            $('#productTable').DataTable({
+                "order": [[1, "asc"]]
+            });
+        });
+    </script>
+}
 

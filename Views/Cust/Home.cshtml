@@ -1,52 +1,96 @@
 ﻿
+@model List<MyResto2.Controllers.Product>
+
 @{
     ViewBag.Title = "Home";
     Layout = "~/Views/Layout/HomeLayout.cshtml";
 }
 
-<!-- Section Welcome -->
-<section class="container mt-5 text-center">
-    <h2>Selamat Datang di Restoran Kami</h2>
-    <p class="lead">Nikmati kelezatan makanan terbaik kami, dibuat dengan bahan berkualitas tinggi dan cita rasa yang tak terlupakan.</p>
+<!-- Hero Section -->
+<div class="container-fluid p-0">
+    <div class="bg-image" style="background-image: url('/ProductImages/hero-bg.jpg'); height: 400px; background-size: cover; background-position: center; position: relative;">
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5);">
+            <div class="container h-100 d-flex flex-column justify-content-center text-white">
+                <h1 class="display-4 fw-bold">Welcome to Food Haven</h1>
+                <p class="lead">Discover delicious meals made with fresh ingredients</p>
+                <a href="@Url.Action("Menu", "Cust")" class="btn btn-warning btn-lg mt-3 align-self-start">
+                    <i class="fas fa-utensils me-2"></i> Explore Our Menu
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Welcome Section -->
+<section class="container mt-5">
+    <div class="welcome-section text-center">
+        <h2 class="welcome-title">Selamat Datang di Food Haven</h2>
+        <p class="welcome-text">Nikmati kelezatan makanan terbaik kami, dibuat dengan bahan berkualitas tinggi dan cita rasa yang tak terlupakan. Kami berkomitmen untuk menyajikan pengalaman kuliner terbaik untuk Anda.</p>
+    </div>
 </section>
 
-<!-- Top Seller -->
+<!-- Top Seller Section -->
 <section class="container mt-5">
-    <h2 class="text-center mb-4">🔥 Menu Favorit Pilihan Pelanggan 🔥</h2>
-    <p class="text-center text-muted">Cek beberapa menu terlaris yang paling banyak dipesan oleh pelanggan setia kami!</p>
-    <div class="row justify-content-center">
-        <asp:Repeater ID="RepeaterTopSeller" runat="server">
-            <ItemTemplate>
-                <div class="col-md-4 d-flex justify-content-center">
-                    <div class="card text-center shadow-sm">
-                        <img src='<%# Eval("ImagePath") %>' class="card-img-top mx-auto mt-3" alt='<%# Eval("ProductName") %>'>
-                        <div class="card-body">
-                            <h5 class="card-title"><%# Eval("ProductName") %></h5>
+    <div class="top-seller-section">
+        <h2 class="text-center section-title mb-5">Menu Favorit Pilihan Pelanggan</h2>
+        <div class="row justify-content-center">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var product in Model.Take(3))
+                {
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 text-center">
+                            <div class="position-relative">
+                                <img src="@Url.Content(product.imagePath)" class="card-img-top" alt="@product.productName">
+                                <div class="position-absolute top-0 start-0 bg-warning text-white px-3 py-1 rounded-end">
+                                    <i class="fas fa-star me-1"></i> Favorit
+                                </div>
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">@product.productName</h5>
+                                <p class="card-text text-muted">@product.Category.categoryName</p>
+                                <p class="card-text text-warning fw-bold">Rp @string.Format("{0:N0}", product.price)</p>
+                                <a href="@Url.Action("Menu", "Cust")" class="btn btn-outline-warning mt-auto">
+                                    <i class="fas fa-shopping-cart me-1"></i> Pesan Sekarang
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </ItemTemplate>
-        </asp:Repeater>
+                }
+            }
+        </div>
     </div>
 </section>
 
 <!-- Image Slider (Auto-Scrolling) -->
-<div class="scrolling-container mt-3">
-    <div class="scrolling-wrapper">
-        <asp:Repeater ID="rptScrollingImages" runat="server">
-            <ItemTemplate>
-                <div class="scrolling-item">
-                    <img src='<%# Eval("ImagePath") %>' alt='<%# Eval("ProductName") %>' class="scrolling-image">
-                </div>
-            </ItemTemplate>
-        </asp:Repeater>
+<div class="container mt-5">
+    <h3 class="text-center section-title mb-4">Menu Kami</h3>
+    <div class="scrolling-container">
+        <div class="scrolling-wrapper">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var product in Model)
+                {
+                    <div class="scrolling-item">
+                        <img src="@Url.Content(product.imagePath)" alt="@product.productName" class="scrolling-image">
+                    </div>
+                }
+            }
+        </div>
     </div>
 </div>
 
 <!-- Order Section -->
-<section class="text-center mt-5">
-    <h2>🍽️ Pesan Sekarang, Nikmati Kelezatannya! 🍽️</h2>
-    <p class="mb-4">Tak perlu antri! Pesan makanan favoritmu langsung dari web ini dan nikmati setiap gigitan lezatnya.</p>
-    <a href="Menu.aspx" class="btn btn-warning btn-lg mt-3">Order Sekarang</a>
+<section class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto text-center p-5 bg-white rounded-3 shadow">
+            <i class="fas fa-utensils fa-3x text-warning mb-3"></i>
+            <h2 class="mb-3">Pesan Sekarang, Nikmati Kelezatannya!</h2>
+            <p class="lead mb-4">Tak perlu antri! Pesan makanan favoritmu langsung dari web ini dan nikmati setiap gigitan lezatnya.</p>
+            <a href="@Url.Action("Menu", "Cust")" class="btn btn-warning btn-lg">
+                <i class="fas fa-shopping-cart me-2"></i> Order Sekarang
+            </a>
+        </div>
+    </div>
 </section>
 

@@ -6,6 +6,7 @@ using System.Web.Mvc;
 using System.Data.Entity;
 using System.Security.Cryptography;
 using System.Text;
+using System.IO;
 
 
 namespace MyResto2.Controllers
@@ -31,7 +32,24 @@ namespace MyResto2.Controllers
         }
         public ActionResult Dashboard()
         {
-            return View();
+            // Get statistics for dashboard
+            ViewBag.TotalCategories = db.Categories.Count();
+            ViewBag.TotalProducts = db.Products.Count();
+            //ViewBag.TotalTransactions = db.Orders.Count();
+            //ViewBag.TotalRevenue = db.Orders.Sum(o => o.totalAmount) ?? 0;
+            
+            // Get products with low stock (10 or less)
+            var lowStockProducts = db.Products
+                .Where(p => p.stock <= 10)
+                .Select(p => new {
+                    productID = p.productID,
+                    productName = p.productName,
+                    categoryName = p.Category.categoryName,
+                    stock = p.stock
+                })
+                .ToList();
+                
+            return View(lowStockProducts);
         }
 
         // Menampilkan halaman ManageCashier dengan daftar admin dan cashier
@@ -120,16 +138,30 @@ namespace MyResto2.Controllers
                     return View(admin);
                 }
 
-                // Jika password diubah, hash password baru
-                var existingAdmin = db.Admins.AsNoTracking().FirstOrDefault(a => a.admin_id == admin.admin_id);
-                if (existingAdmin != null && admin.password_hash != existingAdmin.password_hash)
+                // Ambil data admin yang ada di database
+                var existingAdmin = db.Admins.Find(admin.admin_id);
+                
+                if (existingAdmin != null)
                 {
-                    admin.password_hash = HashPassword(admin.password_hash);
+                    // Update properti yang diubah
+                    existingAdmin.fullname = admin.fullname;
+                    existingAdmin.username = admin.username;
+                    existingAdmin.email = admin.email;
+                    existingAdmin.phone_number = admin.phone_number;
+                    existingAdmin.address = admin.address;
+                    existingAdmin.role = admin.role;
+                    
+                    // Jika password kosong, gunakan password lama (tidak perlu diubah)
+                    if (!string.IsNullOrEmpty(admin.password_hash))
+                    {
+                        // Jika password diubah, hash password baru
+                        existingAdmin.password_hash = HashPassword(admin.password_hash);
+                    }
+                    
+                    // Simpan perubahan
+                    db.SaveChanges();
+                    return RedirectToAction("ManageCashier");
                 }
-
-                db.Entry(admin).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("ManageCashier");
             }
 
             return View(admin);
@@ -162,5 +194,332 @@ namespace MyResto2.Controllers
             db.SaveChanges();
             return RedirectToAction("ManageCashier");
         }
+
+        // Menampilkan halaman ManageProducts dengan daftar produk dan kategori
+        public ActionResult ManageProducts()
+        {
+            ViewBag.Categories = db.Categories.ToList();
+            ViewBag.Products = db.Products.Include(p => p.Category).ToList();
+            return View();
+        }
+
+        #region Category Management
+
+        // Menampilkan form untuk menambah kategori baru
+        public ActionResult AddCategory()
+        {
+            return View();
+        }
+
+        // Menyimpan data kategori baru
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult AddCategory(Category category)
+        {
+            if (ModelState.IsValid)
+            {
+                // Generate ID baru (CAT + 3 digit angka)
+                var lastCategory = db.Categories.OrderByDescending(c => c.categoryID).FirstOrDefault();
+                string newId = "CAT001";
+
+                if (lastCategory != null)
+                {
+                    string lastId = lastCategory.categoryID;
+                    if (lastId.StartsWith("CAT"))
+                    {
+                        int lastNumber = int.Parse(lastId.Substring(3));
+                        newId = $"CAT{(lastNumber + 1).ToString("D3")}"; // Format 3 digit
+                    }
+                }
+
+                category.categoryID = newId;
+                category.createdAt = DateTime.Now;
+
+                db.Categories.Add(category);
+                db.SaveChanges();
+                return RedirectToAction("ManageProducts");
+            }
+
+            return View(category);
+        }
+
+        // Menampilkan form untuk edit kategori
+        public ActionResult EditCategory(string id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(System.Net.HttpStatusCode.BadRequest);
+            }
+
+            Category category = db.Categories.Find(id);
+            if (category == null)
+            {
+                return HttpNotFound();
+            }
+
+            return View(category);
+        }
+
+        // Menyimpan perubahan data kategori
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult EditCategory(Category category)
+        {
+            if (ModelState.IsValid)
+            {
+                var existingCategory = db.Categories.Find(category.categoryID);
+                
+                if (existingCategory != null)
+                {
+                    existingCategory.categoryName = category.categoryName;
+                    
+                    db.SaveChanges();
+                    return RedirectToAction("ManageProducts");
+                }
+            }
+
+            return View(category);
+        }
+
+        // Menampilkan konfirmasi hapus kategori
+        public ActionResult DeleteCategory(string id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(System.Net.HttpStatusCode.BadRequest);
+            }
+
+            Category category = db.Categories.Find(id);
+            if (category == null)
+            {
+                return HttpNotFound();
+            }
+
+            return View(category);
+        }
+
+        // Menghapus data kategori
+        [HttpPost, ActionName("DeleteCategory")]
+        [ValidateAntiForgeryToken]
+        public ActionResult DeleteCategoryConfirmed(string id)
+        {
+            Category category = db.Categories.Find(id);
+            
+            // Check if category has products
+            if (category.Products.Count > 0)
+            {
+                ModelState.AddModelError("", "Kategori ini memiliki produk terkait dan tidak dapat dihapus.");
+                return View("DeleteCategory", category);
+            }
+            
+            db.Categories.Remove(category);
+            db.SaveChanges();
+            return RedirectToAction("ManageProducts");
+        }
+        
+        // AJAX method to get all categories
+        public JsonResult GetCategories()
+        {
+            var categories = db.Categories.Select(c => new { 
+                c.categoryID, 
+                c.categoryName, 
+                c.createdAt,
+                ProductCount = c.Products.Count
+            }).ToList();
+            
+            return Json(categories, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Product Management
+
+        // Menampilkan form untuk menambah produk baru
+        public ActionResult AddProduct()
+        {
+            ViewBag.Categories = db.Categories.ToList();
+            return View();
+        }
+
+        // Menyimpan data produk baru
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult AddProduct(Product product, HttpPostedFileBase productImage)
+        {
+            ViewBag.Categories = db.Categories.ToList();
+
+            if (ModelState.IsValid)
+            {
+                // Generate ID baru (PRD + 3 digit angka)
+                var lastProduct = db.Products.OrderByDescending(p => p.productID).FirstOrDefault();
+                string newId = "PRD001";
+
+                if (lastProduct != null)
+                {
+                    string lastId = lastProduct.productID;
+                    if (lastId.StartsWith("PRD"))
+                    {
+                        int lastNumber = int.Parse(lastId.Substring(3));
+                        newId = $"PRD{(lastNumber + 1).ToString("D3")}"; // Format 3 digit
+                    }
+                }
+
+                product.productID = newId;
+                product.createdAt = DateTime.Now;
+
+                // Handle image upload
+                if (productImage != null && productImage.ContentLength > 0)
+                {
+                    // Create directory if it doesn't exist
+                    string uploadDirectory = Server.MapPath("~/ProductImages");
+                    if (!Directory.Exists(uploadDirectory))
+                    {
+                        Directory.CreateDirectory(uploadDirectory);
+                    }
+
+                    // Generate unique filename
+                    string fileName = $"{newId}_{DateTime.Now.ToString("yyyyMMddHHmmss")}{Path.GetExtension(productImage.FileName)}";
+                    string filePath = Path.Combine(uploadDirectory, fileName);
+                    
+                    // Save file
+                    productImage.SaveAs(filePath);
+                    
+                    // Save relative path to database
+                    product.imagePath = $"/ProductImages/{fileName}";
+                }
+                else
+                {
+                    // Set default image if no image is uploaded
+                    product.imagePath = "/ProductImages/default-product.jpg";
+                }
+
+                db.Products.Add(product);
+                db.SaveChanges();
+                return RedirectToAction("ManageProducts");
+            }
+
+            return View(product);
+        }
+
+        // Menampilkan form untuk edit produk
+        public ActionResult EditProduct(string id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(System.Net.HttpStatusCode.BadRequest);
+            }
+
+            Product product = db.Products.Find(id);
+            if (product == null)
+            {
+                return HttpNotFound();
+            }
+
+            ViewBag.Categories = db.Categories.ToList();
+            return View(product);
+        }
+
+        // Menyimpan perubahan data produk
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult EditProduct(Product product, HttpPostedFileBase productImage)
+        {
+            ViewBag.Categories = db.Categories.ToList();
+
+            if (ModelState.IsValid)
+            {
+                var existingProduct = db.Products.Find(product.productID);
+                
+                if (existingProduct != null)
+                {
+                    // Update properties
+                    existingProduct.productName = product.productName;
+                    existingProduct.categoryID = product.categoryID;
+                    existingProduct.price = product.price;
+                    existingProduct.stock = product.stock;
+                    existingProduct.description = product.description;
+                    
+                    // Handle image upload if a new image is provided
+                    if (productImage != null && productImage.ContentLength > 0)
+                    {
+                        // Create directory if it doesn't exist
+                        string uploadDirectory = Server.MapPath("~/ProductImages");
+                        if (!Directory.Exists(uploadDirectory))
+                        {
+                            Directory.CreateDirectory(uploadDirectory);
+                        }
+
+                        // Generate unique filename
+                        string fileName = $"{product.productID}_{DateTime.Now.ToString("yyyyMMddHHmmss")}{Path.GetExtension(productImage.FileName)}";
+                        string filePath = Path.Combine(uploadDirectory, fileName);
+                        
+                        // Delete old image if it exists and is not the default
+                        if (!string.IsNullOrEmpty(existingProduct.imagePath) && 
+                            existingProduct.imagePath != "/ProductImages/default-product.jpg" &&
+                            System.IO.File.Exists(Server.MapPath($"~{existingProduct.imagePath}")))
+                        {
+                            System.IO.File.Delete(Server.MapPath($"~{existingProduct.imagePath}"));
+                        }
+                        
+                        // Save new file
+                        productImage.SaveAs(filePath);
+                        
+                        // Save relative path to database
+                        existingProduct.imagePath = $"/ProductImages/{fileName}";
+                    }
+                    
+                    db.SaveChanges();
+                    return RedirectToAction("ManageProducts");
+                }
+            }
+
+            return View(product);
+        }
+
+        // Menampilkan konfirmasi hapus produk
+        public ActionResult DeleteProduct(string id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(System.Net.HttpStatusCode.BadRequest);
+            }
+
+            Product product = db.Products.Find(id);
+            if (product == null)
+            {
+                return HttpNotFound();
+            }
+
+            return View(product);
+        }
+
+        // Menghapus data produk
+        [HttpPost, ActionName("DeleteProduct")]
+        [ValidateAntiForgeryToken]
+        public ActionResult DeleteProductConfirmed(string id)
+        {
+            Product product = db.Products.Find(id);
+            
+            // Check if product has order details
+            if (product.OrderDetails.Count > 0)
+            {
+                ModelState.AddModelError("", "Produk ini memiliki riwayat pesanan dan tidak dapat dihapus.");
+                return View("DeleteProduct", product);
+            }
+            
+            // Delete product image if it exists and is not the default
+            if (!string.IsNullOrEmpty(product.imagePath) && 
+                product.imagePath != "/ProductImages/default-product.jpg" &&
+                System.IO.File.Exists(Server.MapPath($"~{product.imagePath}")))
+            {
+                System.IO.File.Delete(Server.MapPath($"~{product.imagePath}"));
+            }
+            
+            db.Products.Remove(product);
+            db.SaveChanges();
+            return RedirectToAction("ManageProducts");
+        }
+
+        #endregion
     }
 }

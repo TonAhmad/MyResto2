@@ -27,6 +27,7 @@ namespace MyResto2.Controllers
         public int stock { get; set; }
         public Nullable<System.DateTime> createdAt { get; set; }
         public string imagePath { get; set; }
+        public string description { get; set; }
     
         public virtual Category Category { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

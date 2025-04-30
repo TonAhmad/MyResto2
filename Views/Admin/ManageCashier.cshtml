@@ -7,24 +7,24 @@
 
 <div class="container-fluid">
     <div class="row mb-4">
-        <div class="col-md-6">
-            <h2>Manage Cashier & Admin</h2>
-        </div>
-        <div class="col-md-6 text-right">
-            <a href="@Url.Action("AddAdmin", "Admin")" class="btn btn-primary">
-                <i class="fa fa-plus"></i> Add New Admin/Cashier
-            </a>
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-users me-2"></i>User Management
+            </h2>
         </div>
     </div>
 
     <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h5 class="m-0">Admin & Cashier List</h5>
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-user-cog me-2"></i>Admin & Cashier List</h5>
+            <a href="@Url.Action("AddAdmin", "Admin")" class="btn btn-light">
+                <i class="fas fa-user-plus"></i> Add New Admin/Cashier
+            </a>
         </div>
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-bordered table-hover" id="adminTable">
-                    <thead class="thead-light">
+                    <thead>
                         <tr>
                             <th>ID</th>
                             <th>Full Name</th>
@@ -46,18 +46,20 @@
                                 <td>@item.email</td>
                                 <td>@item.phone_number</td>
                                 <td>
-                                    <span class="badge @(item.role == "admin" ? "badge-danger" : "badge-success")">
+                                    <span class="badge @(item.role == "admin" ? "bg-danger" : "bg-success")">
                                         @item.role
                                     </span>
                                 </td>
                                 <td>@(item.created_at.HasValue ? item.created_at.Value.ToString("dd/MM/yyyy") : "-")</td>
                                 <td>
-                                    <a href="@Url.Action("EditAdmin", "Admin", new { id = item.admin_id })" class="btn btn-sm btn-warning">
-                                        <i class="fa fa-edit"></i> Edit
-                                    </a>
-                                    <a href="@Url.Action("DeleteAdmin", "Admin", new { id = item.admin_id })" class="btn btn-sm btn-danger">
-                                        <i class="fa fa-trash"></i> Delete
-                                    </a>
+                                    <div class="btn-group">
+                                        <a href="@Url.Action("EditAdmin", "Admin", new { id = item.admin_id })" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <a href="@Url.Action("DeleteAdmin", "Admin", new { id = item.admin_id })" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         }
@@ -71,7 +73,9 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-            $('#adminTable').DataTable();
+            $('#adminTable').DataTable({
+                "order": [[0, "asc"]]
+            });
         });
     </script>
 }

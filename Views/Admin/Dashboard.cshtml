@@ -3,73 +3,149 @@
     Layout = "~/Views/Layout/AdminLayout.cshtml";
 }
 
-<div class="container">
-    <h1 class="mb-4">Admin Dashboard</h1>
-    <div class="row">
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-tachometer-alt me-2"></i>Dashboard Overview
+            </h2>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
         <div class="col-md-3">
-            <div class="card text-white bg-primary dashboard-card">
+            <div class="card bg-white border-left-primary h-100 py-2">
                 <div class="card-body">
-                    <h5 class="card-title">Total Kategori</h5>
-                    <p class="card-text">
-                        <span class="h3">@ViewBag.TotalCategories</span>
-                    </p>
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Kategori</div>
+                            <div class="h3 mb-0 font-weight-bold">@ViewBag.TotalCategories</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-folder fa-2x text-primary"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-white bg-success dashboard-card">
+            <div class="card bg-white border-left-success h-100 py-2">
                 <div class="card-body">
-                    <h5 class="card-title">Total Produk</h5>
-                    <p class="card-text">
-                        <span class="h3">@ViewBag.TotalProducts</span>
-                    </p>
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Produk</div>
+                            <div class="h3 mb-0 font-weight-bold">@ViewBag.TotalProducts</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-utensils fa-2x text-success"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-white bg-warning dashboard-card">
+            <div class="card bg-white border-left-warning h-100 py-2">
                 <div class="card-body">
-                    <h5 class="card-title">Total Transaksi</h5>
-                    <p class="card-text">
-                        <span class="h3">@ViewBag.TotalTransactions</span>
-                    </p>
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Total Transaksi</div>
+                            <div class="h3 mb-0 font-weight-bold">@ViewBag.TotalTransactions</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shopping-cart fa-2x text-warning"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-white bg-danger dashboard-card">
+            <div class="card bg-white border-left-danger h-100 py-2">
                 <div class="card-body">
-                    <h5 class="card-title">Total Pendapatan</h5>
-                    <p class="card-text">
-                        <span class="h3">@ViewBag.TotalRevenue</span>
-                    </p>
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Total Pendapatan</div>
+                            <div class="h3 mb-0 font-weight-bold">@ViewBag.TotalRevenue</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-danger"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <h3 class="mt-4">Produk dengan Stok Rendah</h3>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Nama Produk</th>
-                <th>Kategori</th>
-                <th>Stok</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model != null)
-            {
-                foreach (var item in Model)
-                {
-                    <tr>
-                        <td>@item.productName</td>
-                        <td>@item.categoryName</td>
-                        <td>@item.stock</td>
-                    </tr>
-                }
-            }
-        </tbody>
-    </table>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Produk dengan Stok Rendah</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="lowStockTable">
+                            <thead>
+                                <tr>
+                                    <th>Nama Produk</th>
+                                    <th>Kategori</th>
+                                    <th>Stok</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (ViewBag.LowStockProducts != null)
+                                {
+                                    foreach (var product in ViewBag.LowStockProducts)
+                                    {
+                                        <tr>
+                                            <td>@product.productName</td>
+                                            <td>@product.Category.categoryName</td>
+                                            <td>
+                                                <span class="badge bg-danger">@product.stock</span>
+                                            </td>
+                                            <td>
+                                                <a href="@Url.Action("EditProduct", "Admin", new { id = product.productID })" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-edit"></i> Update Stock
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#lowStockTable').DataTable({
+                "order": [[2, "asc"]]
+            });
+        });
+    </script>
+    
+    <style>
+        .border-left-primary {
+            border-left: 0.25rem solid #4e73df !important;
+        }
+        .border-left-success {
+            border-left: 0.25rem solid #1cc88a !important;
+        }
+        .border-left-warning {
+            border-left: 0.25rem solid #f6c23e !important;
+        }
+        .border-left-danger {
+            border-left: 0.25rem solid #e74a3b !important;
+        }
+    </style>
+}
 
