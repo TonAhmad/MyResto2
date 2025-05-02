@@ -1,42 +1,117 @@
-﻿/* UNTUK LOGIN PAGE */
-/* ====== Background Style ====== */
-body {
-    background: url('/ProductImages/kasir.jpg') no-repeat center center fixed;
-    background-size: cover;
+﻿body {
+    background-color: #f8f9fa;
+    font-family: 'Poppins', sans-serif;
     height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
+    background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-/* ====== Login Container ====== */
 .login-container {
-    background: rgba(255, 255, 255, 0.9); /* Putih transparan */
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    width: 100%;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    background-color: #fff;
     max-width: 400px;
+    width: 100%;
+    padding: 30px;
+}
+
+.login-container h2 {
+    color: #333;
+    margin-bottom: 25px;
+    font-weight: 700;
     text-align: center;
 }
 
-/* ====== Form Group Style ====== */
-.form-group {
-    margin-bottom: 15px;
-}
-
 .form-control {
-    border-radius: 5px;
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    transition: all 0.3s ease;
+    font-size: 16px;
 }
 
-/* ====== Button Style ====== */
+.form-control:focus {
+    border-color: #FF9800;
+    box-shadow: 0 0 0 0.2rem rgba(255, 152, 0, 0.25);
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    color: #666;
+    border-radius: 8px 0 0 8px;
+}
+
 .btn-primary {
-    width: 100%;
-    border-radius: 5px;
+    background-color: #FF9800;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    color: white;
 }
 
-/* ====== Error Message Style ====== */
-.lblMessage {
-    color: red;
-    font-weight: bold;
+.btn-primary:hover {
+    background-color: #F57C00;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
+}
+
+.text-danger {
+    font-size: 14px;
+    margin-top: 5px;
+    color: #f44336;
+}
+
+.alert {
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 8px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.logo-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.logo-container img {
+    max-width: 80px;
+    transition: all 0.3s ease;
+}
+
+.logo-container img:hover {
+    transform: scale(1.1);
+}
+
+.login-footer {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 14px;
+    color: #777;
+}
+
+/* Animation for the login container */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.login-container {
+    animation: fadeIn 0.5s ease-out;
 }

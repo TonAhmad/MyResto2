@@ -1,30 +1,76 @@
-﻿<!DOCTYPE html>
+﻿@model MyResto2.Models.LoginViewModel
+
+@{
+    ViewBag.Title = "Login";
+    Layout = null;
+}
+
+<!DOCTYPE html>
 <html lang="en">
-<head runat="server">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Login - MyResto</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="Design/LoginStyle.css">
+    <link rel="stylesheet" href="~/Content/LoginStyle.css">
+    <link rel="icon" type="image/png" sizes="64x64" href="~/ProductImages/logo.png">
 </head>
-<link rel="icon" type="image/png" sizes="64x64" href="/ProductImages/logo.png">
 <body>
-    <form id="form1" runat="server">
-        <div class="login-container">
-            <h2>Login</h2>
-            <asp:Label ID="lblMessage" runat="server" ForeColor="Red" />
-            <div class="form-group">
-                <asp:Label ID="lblUsername" runat="server" Text="Username:"></asp:Label>
-                <asp:TextBox ID="txtUsername" runat="server" CssClass="form-control"></asp:TextBox>
-            </div>
-            <div class="form-group">
-                <asp:Label ID="lblPassword" runat="server" Text="Password:"></asp:Label>
-                <asp:TextBox ID="txtPassword" runat="server" TextMode="Password" CssClass="form-control"></asp:TextBox>
-            </div>
-            <div class="form-group">
-                <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="btn btn-primary" OnClick="btnLogin_Click" />
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="login-container card shadow-lg mt-5">
+                    <div class="card-body p-4">
+                        <div class="text-center mb-4">
+                            <img src="~/ProductImages/logo.png" alt="Logo" class="img-fluid mb-3" style="max-width: 80px;">
+                            <h2 class="fw-bold">MyResto Login</h2>
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                        {
+                            <div class="alert alert-danger">
+                                @ViewBag.ErrorMessage
+                            </div>
+                        }
+                        
+                        @using (Html.BeginForm("Login", "Login", FormMethod.Post, new { @class = "needs-validation", @novalidate = "novalidate" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            
+                            <div class="form-group mb-3">
+                                <label for="Username" class="form-label">Username</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    @Html.TextBoxFor(m => m.Username, new { @class = "form-control", placeholder = "Enter your username", required = "required" })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.Username, "", new { @class = "text-danger" })
+                            </div>
+                            
+                            <div class="form-group mb-4">
+                                <label for="Password" class="form-label">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Enter your password", required = "required" })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-sign-in-alt me-2"></i> Login
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
         </div>
-    </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
 </body>
 </html>

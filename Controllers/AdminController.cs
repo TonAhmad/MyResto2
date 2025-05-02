@@ -7,10 +7,11 @@ using System.Data.Entity;
 using System.Security.Cryptography;
 using System.Text;
 using System.IO;
-
+using MyResto2.Filters;
 
 namespace MyResto2.Controllers
 {
+    [AdminAuthorizationFilter]
     public class AdminController : Controller
     {
         static dbResto2Entities db = new dbResto2Entities();
@@ -96,7 +97,7 @@ namespace MyResto2.Controllers
                 admin.admin_id = newId;
                 admin.created_at = DateTime.Now;
                 
-                // Hash password (dalam contoh ini menggunakan BCrypt)
+                // Hash password
                 admin.password_hash = HashPassword(admin.password_hash);
 
                 db.Admins.Add(admin);
@@ -521,5 +522,18 @@ namespace MyResto2.Controllers
         }
 
         #endregion
+
+        // Add this to all action methods to pass the username to the view
+        protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        {
+            base.OnActionExecuting(filterContext);
+            
+            // Pass the username to all views
+            if (Session["Username"] != null)
+            {
+                ViewBag.Username = Session["Username"].ToString();
+                ViewBag.FullName = Session["FullName"]?.ToString();
+            }
+        }
     }
 }

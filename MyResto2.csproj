@@ -178,11 +178,14 @@
     <Compile Include="Controllers\sysdiagram.cs">
       <DependentUpon>dbResto.tt</DependentUpon>
     </Compile>
+    <Compile Include="Filters\AdminAuthorizationFilter.cs" />
+    <Compile Include="Filters\CashierAuthorizationFilter.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\LoginViewModel.cs" />
     <Compile Include="Models\OrderViewModel.cs" />
-    <Compile Include="Models\Transaction.cs" />
+    <Compile Include="Models\ProcessPaymentViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

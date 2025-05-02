@@ -1,15 +1,29 @@
 ﻿
+@model MyResto2.Models.ProcessPaymentViewModel
+
 @{
-    ViewBag.Title = "ProcessPayment";
+    ViewBag.Title = "Process Payment";
     Layout = "~/Views/Layout/CashierLayout.cshtml";
 }
 
 <h2 class="text-center">Daftar Pesanan Pending</h2>
 
-<asp:Label ID="lblMessage" runat="server" CssClass="message-label"></asp:Label>
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
 
 <div class="table-responsive">
-    <table class="order-table">
+    <table class="order-table table table-striped">
         <thead>
             <tr>
                 <th>Order ID</th>
@@ -20,21 +34,23 @@
             </tr>
         </thead>
         <tbody>
-            <asp:Repeater ID="rptPendingOrders" runat="server">
-                <ItemTemplate>
-                    <tr>
-                        <td><%# Eval("orderID") %></td>
-                        <td><%# Eval("customerName") %></td>
-                        <td><%# Eval("orderDate", "{0:dd/MM/yyyy HH:mm}") %></td>
-                        <td><%# Eval("orderStatus") %></td>
-                        <td>
-                            <asp:Button ID="btnConfirm" runat="server" CssClass="btn-confirm"
-                                        Text="Confirm" CommandArgument='<%# Eval("orderID") %>'
-                                        OnClick="btnConfirm_Click" />
-                        </td>
-                    </tr>
-                </ItemTemplate>
-            </asp:Repeater>
+            @foreach (var order in Model.PendingOrders)
+            {
+                <tr>
+                    <td>@order.orderID</td>
+                    <td>@order.customerName</td>
+                    <td>@(order.orderDate.HasValue ? order.orderDate.Value.ToString("dd/MM/yyyy HH:mm") : "-")</td>
+                    <td>@order.orderStatus</td>
+                    <td>
+                        @using (Html.BeginForm("ConfirmOrder", "Cashier", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="orderId" value="@order.orderID" />
+                            <button type="submit" class="btn btn-primary btn-sm">Confirm</button>
+                        }
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
 </div>
@@ -42,7 +58,7 @@
 <!-- Tabel Pesanan yang Sudah Dikonfirmasi -->
 <h3>Confirmed Orders</h3>
 <div class="table-responsive">
-    <table class="order-table">
+    <table class="order-table table table-striped">
         <thead>
             <tr>
                 <th>Order ID</th>
@@ -53,91 +69,100 @@
             </tr>
         </thead>
         <tbody>
-            <asp:Repeater ID="rptConfirmedOrders" runat="server">
-                <ItemTemplate>
-                    <tr>
-                        <td><%# Eval("orderID") %></td>
-                        <td><%# Eval("customerName") %></td>
-                        <td><%# Eval("orderDate", "{0:dd/MM/yyyy HH:mm}") %></td>
-                        <td><%# Eval("orderStatus") %></td>
-                        <td>
-                            <asp:Button ID="btnSelect" runat="server" CssClass="btn-select"
-                                        Text="Select" CommandArgument='<%# Eval("orderID") %>'
-                                        OnClick="btnSelect_Click" />
-                        </td>
-                    </tr>
-                </ItemTemplate>
-            </asp:Repeater>
+            @foreach (var order in Model.ConfirmedOrders)
+            {
+                <tr>
+                    <td>@order.orderID</td>
+                    <td>@order.customerName</td>
+                    <td>@(order.orderDate.HasValue ? order.orderDate.Value.ToString("dd/MM/yyyy HH:mm") : "-")</td>
+                    <td>@order.orderStatus</td>
+                    <td>
+                        @using (Html.BeginForm("SelectOrder", "Cashier", FormMethod.Post))
+                        {
+                            <input type="hidden" name="orderId" value="@order.orderID" />
+                            <button type="submit" class="btn btn-info btn-sm">Select</button>
+                        }
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
 </div>
-
 
 <!-- Detail Pesanan yang Dipilih -->
-<div class="selected-order-container">
-    <h3>Selected Order Details</h3>
-    <table class="order-table">
-        <thead>
-            <tr>
-                <th>Customer Name</th>
-                <th>Product Name</th>
-                <th>Quantity</th>
-                <th>Subtotal</th>
-            </tr>
-        </thead>
-        <tbody>
-            <asp:Repeater ID="rptSelectedOrder" runat="server">
-                <ItemTemplate>
+@if (Model.SelectedOrderDetails.Any())
+{
+    <div class="selected-order-container mt-4">
+        <h3>Selected Order Details</h3>
+        <table class="order-table table table-striped">
+            <thead>
+                <tr>
+                    <th>Customer Name</th>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var detail in Model.SelectedOrderDetails)
+                {
                     <tr>
-                        <td>
-                            <%# Eval("customerName") %>
-                            <asp:Label ID="lblOrderID" runat="server" Text='<%# Eval("orderID") %>' Visible="false"></asp:Label>
-                        </td>
-                        <td>
-                            <%# Eval("productName") %>
-                            <asp:Label ID="lblProductID" runat="server" Text='<%# Eval("productID") %>' Visible="false"></asp:Label>
-                        </td>
-                        <td>
-                            <asp:Label ID="lblQuantity" runat="server" Text='<%# Eval("quantity") %>'></asp:Label>
-                        </td>
-                        <td>
-                            Rp
-                            <asp:Label ID="lblSubtotal" runat="server" Text='<%# Eval("subtotal", "{0:N0}") %>'></asp:Label>
-                        </td>
+                        <td>@detail.CustomerName</td>
+                        <td>@detail.ProductName</td>
+                        <td>@detail.Quantity</td>
+                        <td>Rp @detail.Subtotal.ToString("N0")</td>
                     </tr>
-                </ItemTemplate>
-            </asp:Repeater>
-        </tbody>
-    </table>
-</div>
-
-
-<!-- Input untuk Pembayaran -->
-<div class="payment-section">
-    <h3 class="mb-3">Payment</h3>
-
-    <!-- Total Amount -->
-    <div class="mb-2">
-        <label class="fw-bold">Total Amount:</label>
-        <asp:Label ID="lblTotalAmount" runat="server" CssClass="ms-2 text-danger fw-bold"></asp:Label>
+                }
+            </tbody>
+        </table>
     </div>
 
-    <!-- Amount Paid -->
-    <div class="mb-2">
-        <label for="txtAmount" class="form-label">Amount Paid:</label>
-        <asp:TextBox ID="txtAmount" runat="server" CssClass="form-control" placeholder="Masukkan nominal"></asp:TextBox>
+    <!-- Input untuk Pembayaran -->
+    <div class="payment-section mt-4">
+        <h3 class="mb-3">Payment</h3>
+
+        @using (Html.BeginForm("ProcessPayment", "Cashier", FormMethod.Post, new { id = "paymentForm" }))
+        {
+            <input type="hidden" name="orderId" value="@Model.SelectedOrderDetails.First().OrderID" />
+            
+            <!-- Total Amount -->
+            <div class="mb-2">
+                <label class="fw-bold">Total Amount:</label>
+                <span class="ms-2 text-danger fw-bold">Rp @Model.TotalAmount.ToString("N0")</span>
+            </div>
+
+            <!-- Amount Paid -->
+            <div class="mb-2">
+                <label for="amountPaid" class="form-label">Amount Paid:</label>
+                <input type="text" id="amountPaid" name="amountPaid" class="form-control" placeholder="Masukkan nominal" required />
+            </div>
+
+            <!-- Change -->
+            <div class="mb-2">
+                <label for="change" class="form-label">Change:</label>
+                <input type="text" id="change" class="form-control" readonly />
+            </div>
+
+            <!-- Buttons -->
+            <div class="d-flex gap-2 mt-3">
+                <button type="button" id="btnCalculate" class="btn btn-secondary px-4">Calculate Change</button>
+                <button type="submit" class="btn btn-success px-4">Complete Payment</button>
+            </div>
+        }
     </div>
 
-    <!-- Change -->
-    <div class="mb-2">
-        <label for="txtChange" class="form-label">Change:</label>
-        <asp:TextBox ID="txtChange" runat="server" CssClass="form-control" ReadOnly="true"></asp:TextBox>
-    </div>
-
-    <!-- Buttons -->
-    <div class="d-flex gap-2 mt-3">
-        <asp:Button ID="btnPay" runat="server" CssClass="btn btn-success px-4" Text="Pay" OnClick="btnPay_Click" />
-        <asp:Button ID="btnCompleteTransaction" runat="server" CssClass="btn btn-primary px-4" Text="Complete Transaction" OnClick="btnCompleteTransaction_Click" />
-    </div>
-</div>
+    <script>
+        document.getElementById('btnCalculate').addEventListener('click', function() {
+            var amountPaid = parseFloat(document.getElementById('amountPaid').value.replace(/,/g, '')) || 0;
+            var totalAmount = @Model.TotalAmount;
+            var change = amountPaid - totalAmount;
+            
+            if (change < 0) {
+                document.getElementById('change').value = "Insufficient amount";
+            } else {
+                document.getElementById('change').value = "Rp " + change.toLocaleString('id-ID');
+            }
+        });
+    </script>
+}
 

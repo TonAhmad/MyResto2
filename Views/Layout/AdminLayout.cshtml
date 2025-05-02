@@ -26,8 +26,8 @@
                 <div class="user-avatar">
                     <i class="fas fa-user"></i>
                 </div>
-                <h6 class="text-center mb-0">@ViewBag.Username</h6>
-                <p class="text-center text-muted small mb-0">Administrator</p>
+                <h6 class="text-center mb-0">@(ViewBag.Username ?? "Guest")</h6>
+                <p class="text-center text-muted small mb-0">@(ViewBag.FullName ?? "Administrator")</p>
             </div>
             
             <ul class="nav flex-column px-3">
