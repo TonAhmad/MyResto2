@@ -90,51 +90,55 @@
 </div>
 
 <!-- Detail Pesanan yang Dipilih -->
-@if (Model.SelectedOrderDetails.Any())
-{
-    <div class="selected-order-container mt-4">
-        <h3>Selected Order Details</h3>
-        <table class="order-table table table-striped">
-            <thead>
+<div class="selected-order-container mt-4">
+    <h3>Selected Order Details</h3>
+    <table class="order-table table table-striped">
+        <thead>
+            <tr>
+                <th>Customer Name</th>
+                <th>Product Name</th>
+                <th>Quantity</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var detail in Model.SelectedOrderDetails)
+            {
                 <tr>
-                    <th>Customer Name</th>
-                    <th>Product Name</th>
-                    <th>Quantity</th>
-                    <th>Subtotal</th>
+                    <td>@detail.CustomerName</td>
+                    <td>@detail.ProductName</td>
+                    <td>@detail.Quantity</td>
+                    <td>Rp @detail.Subtotal.ToString("N0")</td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach (var detail in Model.SelectedOrderDetails)
-                {
-                    <tr>
-                        <td>@detail.CustomerName</td>
-                        <td>@detail.ProductName</td>
-                        <td>@detail.Quantity</td>
-                        <td>Rp @detail.Subtotal.ToString("N0")</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+            }
+        </tbody>
+    </table>
+</div>
 
-    <!-- Input untuk Pembayaran -->
-    <div class="payment-section mt-4">
-        <h3 class="mb-3">Payment</h3>
-
-        @using (Html.BeginForm("ProcessPayment", "Cashier", FormMethod.Post, new { id = "paymentForm" }))
+<!-- Input untuk Pembayaran -->
+<div class="payment-section mt-4">
+    <h3 class="mb-3">Payment</h3>
+    
+    @using (Html.BeginForm("ProcessPayment", "Cashier", FormMethod.Post, new { id = "paymentForm" }))
+    {
+        if (Model.SelectedOrderDetails.Any())
         {
             <input type="hidden" name="orderId" value="@Model.SelectedOrderDetails.First().OrderID" />
-            
+
             <!-- Total Amount -->
             <div class="mb-2">
                 <label class="fw-bold">Total Amount:</label>
                 <span class="ms-2 text-danger fw-bold">Rp @Model.TotalAmount.ToString("N0")</span>
+                <input type="hidden" id="totalAmountValue" value="@Model.TotalAmount" />
             </div>
 
             <!-- Amount Paid -->
             <div class="mb-2">
                 <label for="amountPaid" class="form-label">Amount Paid:</label>
                 <input type="text" id="amountPaid" name="amountPaid" class="form-control" placeholder="Masukkan nominal" required />
+                <div id="amountPaidFeedback" class="invalid-feedback">
+                    Amount paid must be greater than or equal to the total amount.
+                </div>
             </div>
 
             <!-- Change -->
@@ -146,23 +150,75 @@
             <!-- Buttons -->
             <div class="d-flex gap-2 mt-3">
                 <button type="button" id="btnCalculate" class="btn btn-secondary px-4">Calculate Change</button>
-                <button type="submit" class="btn btn-success px-4">Complete Payment</button>
+                <button type="submit" id="btnCompletePayment" class="btn btn-success px-4">Complete Payment</button>
             </div>
         }
-    </div>
+        else
+        {
+            <div class="alert alert-info">
+                Please select an order from the confirmed orders list to process payment.
+            </div>
+        }
+    }
+</div>
 
-    <script>
-        document.getElementById('btnCalculate').addEventListener('click', function() {
-            var amountPaid = parseFloat(document.getElementById('amountPaid').value.replace(/,/g, '')) || 0;
-            var totalAmount = @Model.TotalAmount;
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var amountPaidInput = document.getElementById('amountPaid');
+        var btnCalculate = document.getElementById('btnCalculate');
+        var btnCompletePayment = document.getElementById('btnCompletePayment');
+        
+        if (amountPaidInput && btnCalculate && btnCompletePayment) {
+            // Calculate change when button is clicked
+            btnCalculate.addEventListener('click', calculateChange);
+            
+            // Validate amount before form submission
+            document.getElementById('paymentForm').addEventListener('submit', function(event) {
+                if (!validateAmount()) {
+                    event.preventDefault();
+                }
+            });
+            
+            // Validate on input change
+            amountPaidInput.addEventListener('input', function() {
+                validateAmount();
+            });
+        }
+        
+        function calculateChange() {
+            var amountPaid = parseFloat(amountPaidInput.value.replace(/,/g, '')) || 0;
+            var totalAmount = parseFloat(document.getElementById('totalAmountValue').value) || 0;
             var change = amountPaid - totalAmount;
             
             if (change < 0) {
                 document.getElementById('change').value = "Insufficient amount";
+                amountPaidInput.classList.add('is-invalid');
+                document.getElementById('amountPaidFeedback').style.display = 'block';
+                btnCompletePayment.disabled = true;
             } else {
                 document.getElementById('change').value = "Rp " + change.toLocaleString('id-ID');
+                amountPaidInput.classList.remove('is-invalid');
+                document.getElementById('amountPaidFeedback').style.display = 'none';
+                btnCompletePayment.disabled = false;
             }
-        });
-    </script>
-}
+        }
+        
+        function validateAmount() {
+            var amountPaid = parseFloat(amountPaidInput.value.replace(/,/g, '')) || 0;
+            var totalAmount = parseFloat(document.getElementById('totalAmountValue').value) || 0;
+            
+            if (amountPaid < totalAmount) {
+                amountPaidInput.classList.add('is-invalid');
+                document.getElementById('amountPaidFeedback').style.display = 'block';
+                btnCompletePayment.disabled = true;
+                return false;
+            } else {
+                amountPaidInput.classList.remove('is-invalid');
+                document.getElementById('amountPaidFeedback').style.display = 'none';
+                btnCompletePayment.disabled = false;
+                return true;
+            }
+        }
+    });
+</script>
 

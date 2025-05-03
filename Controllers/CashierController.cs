@@ -13,6 +13,7 @@ namespace MyResto2.Controllers
     {
         private dbResto2Entities db = new dbResto2Entities();
 
+
         // GET: Cashier/ProcessPayment
         public ActionResult ProcessPayment()
         {
@@ -84,6 +85,7 @@ namespace MyResto2.Controllers
                 if (order.orderStatus == "pending")
                 {
                     order.orderStatus = "confirmed";
+                    order.admin_id = Session["UserID"].ToString();
                     db.SaveChanges();
                     TempData["SuccessMessage"] = "Order confirmed successfully.";
                     System.Diagnostics.Debug.WriteLine("Order confirmed successfully");
@@ -179,6 +181,16 @@ namespace MyResto2.Controllers
             var order = db.OrderHeaders.Find(orderId);
             if (order != null && order.orderStatus == "confirmed")
             {
+                // Validate that amount paid is sufficient
+                if (amountPaid < order.total)
+                {
+                    TempData["ErrorMessage"] = "Payment amount must be greater than or equal to the total amount.";
+                    return RedirectToAction("SelectOrder", new { orderId = orderId });
+                }
+
+                // Calculate change
+                decimal change = amountPaid - order.total;
+                
                 // Update order status to completed
                 order.orderStatus = "completed";
                 
@@ -187,11 +199,11 @@ namespace MyResto2.Controllers
                 
                 db.SaveChanges();
                 
-                // In the ProcessPayment method
-                // Calculate change
-                decimal change = amountPaid - order.total;
-                
                 TempData["SuccessMessage"] = "Payment processed successfully. Change: Rp " + change.ToString("N0");
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Invalid order or order status.";
             }
             return RedirectToAction("ProcessPayment");
         }

@@ -84,7 +84,7 @@ namespace MyResto2.Controllers
                     customerName = customerName,
                     orderDate = DateTime.Now,
                     total = totalAmount,
-                    orderStatus = "Pending" // Initial status
+                    orderStatus = "pending" // Initial status
                 };
                 
                 db.OrderHeaders.Add(orderHeader);

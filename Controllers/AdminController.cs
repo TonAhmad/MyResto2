@@ -96,7 +96,7 @@ namespace MyResto2.Controllers
 
                 admin.admin_id = newId;
                 admin.created_at = DateTime.Now;
-                
+
                 // Hash password
                 admin.password_hash = HashPassword(admin.password_hash);
 
@@ -534,6 +534,12 @@ namespace MyResto2.Controllers
                 ViewBag.Username = Session["Username"].ToString();
                 ViewBag.FullName = Session["FullName"]?.ToString();
             }
+        }
+        public ActionResult Reports()
+        {
+            ViewBag.Categories = db.Categories.ToList();
+            ViewBag.Products = db.Products.Include(p => p.Category).ToList();
+            return View();
         }
     }
 }
