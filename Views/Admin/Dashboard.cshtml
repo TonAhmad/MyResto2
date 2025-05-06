@@ -1,4 +1,5 @@
-﻿@{
+﻿@model IEnumerable<MyResto2.Controllers.Product>
+@{
     ViewBag.Title = "Dashboard";
     Layout = "~/Views/Layout/AdminLayout.cshtml";
 }
@@ -68,7 +69,7 @@
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
                                 Total Pendapatan</div>
-                            <div class="h3 mb-0 font-weight-bold">@ViewBag.TotalRevenue</div>
+                            <div class="h3 mb-0 font-weight-bold">Rp @ViewBag.TotalRevenue</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-dollar-sign fa-2x text-danger"></i>
@@ -97,23 +98,31 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @if (ViewBag.LowStockProducts != null)
+                                @if (Model != null && Model.Any())
                                 {
-                                    foreach (var product in ViewBag.LowStockProducts)
+                                    foreach (var product in Model)
                                     {
                                         <tr>
                                             <td>@product.productName</td>
                                             <td>@product.Category.categoryName</td>
                                             <td>
-                                                <span class="badge bg-danger">@product.stock</span>
+                                                <span class="@(product.stock <= 5 ? "text-danger" : "text-warning")">
+                                                    @product.stock
+                                                </span>
                                             </td>
                                             <td>
                                                 <a href="@Url.Action("EditProduct", "Admin", new { id = product.productID })" class="btn btn-sm btn-primary">
-                                                    <i class="fas fa-edit"></i> Update Stock
+                                                    <i class="fas fa-edit"></i> Edit
                                                 </a>
                                             </td>
                                         </tr>
                                     }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center">Tidak ada produk dengan stok rendah</td>
+                                    </tr>
                                 }
                             </tbody>
                         </table>

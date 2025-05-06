@@ -45,8 +45,6 @@ namespace MyResto2.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    // Log input values for debugging (remove in production)
-                    System.Diagnostics.Debug.WriteLine($"Login attempt: Username={model.Username}");
                     
                     // Hash the password for comparison
                     string hashedPassword = HashPassword(model.Password);

@@ -36,20 +36,35 @@ namespace MyResto2.Controllers
             // Get statistics for dashboard
             ViewBag.TotalCategories = db.Categories.Count();
             ViewBag.TotalProducts = db.Products.Count();
-            //ViewBag.TotalTransactions = db.Orders.Count();
-            //ViewBag.TotalRevenue = db.Orders.Sum(o => o.totalAmount) ?? 0;
             
-            // Get products with low stock (10 or less)
+            // Get total transactions (orders) - only completed orders
+            ViewBag.TotalTransactions = db.OrderHeaders
+                .Where(o => o.orderStatus == "completed")
+                .Count();
+            
+            // Get total revenue - handle null values and only count completed orders
+            decimal totalRevenue = 0;
+            try
+            {
+                totalRevenue = db.OrderHeaders
+                    .Where(o => o.orderStatus == "completed")
+                    .Sum(o => o.total);
+            }
+            catch (InvalidOperationException)
+            {
+                // This will catch the exception if there are no completed orders
+                totalRevenue = 0;
+            }
+            
+            ViewBag.TotalRevenue = totalRevenue.ToString("N0");
+            
+            // Get products with low stock (<=10)
             var lowStockProducts = db.Products
                 .Where(p => p.stock <= 10)
-                .Select(p => new {
-                    productID = p.productID,
-                    productName = p.productName,
-                    categoryName = p.Category.categoryName,
-                    stock = p.stock
-                })
+                .Include(p => p.Category)
+                .OrderBy(p => p.stock)
                 .ToList();
-                
+            
             return View(lowStockProducts);
         }
 
@@ -535,11 +550,48 @@ namespace MyResto2.Controllers
                 ViewBag.FullName = Session["FullName"]?.ToString();
             }
         }
-        public ActionResult Reports()
+        public ActionResult Reports(DateTime? startDate = null, DateTime? endDate = null, string orderStatus = null)
         {
-            ViewBag.Categories = db.Categories.ToList();
-            ViewBag.Products = db.Products.Include(p => p.Category).ToList();
-            return View();
+            // Set default date range if not provided (last 30 days)
+            if (!startDate.HasValue)
+                startDate = DateTime.Now.AddDays(-30);
+            if (!endDate.HasValue)
+                endDate = DateTime.Now;
+
+            // Adjust end date to include the entire day
+            endDate = endDate.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
+            
+            // Get orders based on filter
+            var query = db.OrderHeaders.AsQueryable();
+            
+            // Apply date filter
+            query = query.Where(o => o.orderDate >= startDate && o.orderDate <= endDate);
+            
+            // Apply status filter if provided
+            if (!string.IsNullOrEmpty(orderStatus))
+            {
+                query = query.Where(o => o.orderStatus == orderStatus);
+            }
+            
+            // Include related data and order by date
+            var orders = query
+                .Include(o => o.Admin)
+                .Include(o => o.OrderDetails.Select(od => od.Product))
+                .OrderByDescending(o => o.orderDate)
+                .ToList();
+            
+            // Calculate summary statistics
+            ViewBag.TotalOrders = orders.Count;
+            ViewBag.TotalRevenue = orders.Sum(o => o.total);
+            ViewBag.CompletedOrders = orders.Count(o => o.orderStatus == "completed");
+            ViewBag.PendingOrders = orders.Count(o => o.orderStatus == "pending");
+            
+            // Pass filter values to view for maintaining state
+            ViewBag.StartDate = startDate.Value.ToString("yyyy-MM-dd");
+            ViewBag.EndDate = endDate.Value.ToString("yyyy-MM-dd");
+            ViewBag.OrderStatus = orderStatus;
+            
+            return View(orders);
         }
     }
 }
