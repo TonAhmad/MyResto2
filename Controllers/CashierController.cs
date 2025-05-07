@@ -208,6 +208,121 @@ namespace MyResto2.Controllers
             return RedirectToAction("ProcessPayment");
         }
 
+        public ActionResult TransactionHistory(DateTime? startDate = null, DateTime? endDate = null, string orderStatus = "all")
+        {
+            // Set default date range if not provided
+            if (!startDate.HasValue)
+                startDate = DateTime.Now.AddDays(-30);
+            
+            if (!endDate.HasValue)
+                endDate = DateTime.Now;
+            
+            // Ensure end date includes the entire day
+            endDate = endDate.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
+            
+            // Store filter values in ViewBag for form
+            ViewBag.StartDate = startDate;
+            ViewBag.EndDate = endDate;
+            ViewBag.OrderStatus = orderStatus;
+            
+            // Get orders based on filter criteria
+            var query = db.OrderHeaders.AsQueryable();
+            
+            // Apply date filter
+            query = query.Where(o => o.orderDate >= startDate && o.orderDate <= endDate);
+            
+            // Apply status filter
+            if (orderStatus != "all")
+            {
+                query = query.Where(o => o.orderStatus == orderStatus);
+            }
+            else
+            {
+                // If "all" is selected, only show completed and cancelled orders
+                query = query.Where(o => o.orderStatus == "completed" || o.orderStatus == "cancelled");
+            }
+            
+            // Execute query and get results
+            var orders = query.OrderByDescending(o => o.orderDate).ToList();
+            
+            // Map to view model
+            var orderSummaries = orders.Select(o => new Models.OrderSummary
+            {
+                OrderID = o.orderID,
+                CustomerName = o.customerName,
+                OrderDate = o.orderDate ?? DateTime.MinValue,
+                Total = o.total,
+                OrderStatus = o.orderStatus,
+                CashierID = o.admin_id,
+                CashierName = o.Admin != null ? o.Admin.fullname : "Unknown"
+            }).ToList();
+            
+            // Calculate summary statistics
+            var totalTransactions = orderSummaries.Count;
+            var totalSales = orderSummaries.Where(o => o.OrderStatus == "completed").Sum(o => o.Total);
+            var averageOrderValue = totalTransactions > 0 ? 
+                orderSummaries.Where(o => o.OrderStatus == "completed").DefaultIfEmpty().Average(o => o?.Total ?? 0) : 0;
+            
+            // Create view model
+            var viewModel = new TransactionHistoryViewModel
+            {
+                Orders = orderSummaries,
+                TotalTransactions = totalTransactions,
+                TotalSales = totalSales,
+                AverageOrderValue = averageOrderValue
+            };
+            
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public ActionResult GetOrderDetails(string orderId)
+        {
+            var order = db.OrderHeaders.Find(orderId);
+            if (order == null)
+            {
+                return PartialView("_OrderDetails", new OrderDetailsViewModel
+                {
+                    OrderHeader = new OrderSummary(),
+                    OrderDetails = new List<OrderItemDetail>()
+                });
+            }
+            
+            // Get order details
+            var orderDetails = db.OrderDetails
+                .Where(od => od.orderID == orderId)
+                .ToList();
+            
+            // Map to view model
+            var orderHeader = new OrderSummary
+            {
+                OrderID = order.orderID,
+                CustomerName = order.customerName,
+                OrderDate = order.orderDate ?? DateTime.MinValue,
+                Total = order.total,
+                OrderStatus = order.orderStatus,
+                CashierID = order.admin_id,
+                CashierName = order.Admin != null ? order.Admin.fullname : "Unknown"
+            };
+            
+            var orderItems = orderDetails.Select(od => new OrderItemDetail
+            {
+                ProductID = od.productID,
+                ProductName = od.Product.productName,
+                UnitPrice = od.Product.price,
+                Quantity = od.quantity,
+                Subtotal = od.subtotal ?? 0
+            }).ToList();
+            
+            var viewModel = new OrderDetailsViewModel
+            {
+                OrderHeader = orderHeader,
+                OrderDetails = orderItems
+            };
+            
+            return PartialView("_OrderDetails", viewModel);
+        }
+
         // Helper method to pass user info to all views
         protected override void OnActionExecuting(ActionExecutingContext filterContext)
         {

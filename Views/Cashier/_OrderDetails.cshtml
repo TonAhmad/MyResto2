@@ -1,0 +1,50 @@
+﻿
+@model MyResto2.Models.OrderDetailsViewModel
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h6>Order ID: <span class="font-weight-normal">@Model.OrderHeader.OrderID</span></h6>
+        <h6>Customer: <span class="font-weight-normal">@Model.OrderHeader.CustomerName</span></h6>
+        <h6>Date: <span class="font-weight-normal">@Model.OrderHeader.OrderDate.ToString("dd/MM/yyyy HH:mm")</span></h6>
+    </div>
+    <div class="col-md-6 text-md-right">
+        <h6>Status: 
+            <span class="badge badge-@(Model.OrderHeader.OrderStatus == "completed" ? "success" : 
+                                      Model.OrderHeader.OrderStatus == "cancelled" ? "danger" : "secondary")">
+                @Model.OrderHeader.OrderStatus
+            </span>
+        </h6>
+        <h6>Cashier: <span class="font-weight-normal">@Model.OrderHeader.CashierName</span></h6>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th class="text-right">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.OrderDetails)
+            {
+                <tr>
+                    <td>@item.ProductName</td>
+                    <td>Rp @item.UnitPrice.ToString("N0")</td>
+                    <td>@item.Quantity</td>
+                    <td class="text-right">Rp @item.Subtotal.ToString("N0")</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="3" class="text-right">Total:</th>
+                <th class="text-right">Rp @Model.OrderHeader.Total.ToString("N0")</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
