@@ -105,6 +105,34 @@ namespace MyResto2.Controllers
             return RedirectToAction("ProcessPayment");
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult CancelOrder(string orderId)
+        {
+            try
+            {
+                var order = db.OrderHeaders.Find(orderId);
+                if (order == null)
+                {
+                    TempData["ErrorMessage"] = "Order not found.";
+                    return RedirectToAction("ProcessPayment");
+                }
+
+                // Update order status to cancelled
+                order.orderStatus = "canceled";
+                order.admin_id = Session["UserID"].ToString();
+                db.SaveChanges();
+
+                TempData["SuccessMessage"] = "Order has been cancelled successfully.";
+                return RedirectToAction("ProcessPayment");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error cancelling order: " + ex.Message;
+                return RedirectToAction("ProcessPayment");
+            }
+        }
+
         // POST: Cashier/SelectOrder
         [HttpPost]
         public ActionResult SelectOrder(string orderId)
@@ -239,7 +267,7 @@ namespace MyResto2.Controllers
             else
             {
                 // If "all" is selected, only show completed and cancelled orders
-                query = query.Where(o => o.orderStatus == "completed" || o.orderStatus == "cancelled");
+                query = query.Where(o => o.orderStatus == "completed" || o.orderStatus == "canceled");
             }
             
             // Execute query and get results
@@ -337,3 +365,6 @@ namespace MyResto2.Controllers
         }
     }
 }
+
+
+

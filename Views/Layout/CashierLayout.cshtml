@@ -3,42 +3,121 @@
 <html>
 <head>
     <title>@ViewBag.Title - Cashier Panel</title>
-    @RenderSection("head", required: false)
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link href="~/Content/CashierStyle.css" rel="stylesheet">
-    <link rel="stylesheet" href="Design/CashierStyle.css" />
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="icon" type="image/png" sizes="64x64" href="/ProductImages/logo.png">
+    @RenderSection("Styles", required: false)
 </head>
 <body>
-
     <div class="d-flex">
         <!-- Sidebar -->
-        <nav class="sidebar bg-dark text-white p-3">
-            <h2 class="text-center">Cashier Panel</h2>
-            <div class="text-center mb-3">
-                <h5>
-                    👤
-                    <span class="text-warning">@ViewBag.Username</span>
-                </h5>
+        <nav class="sidebar bg-dark text-white">
+            <div class="p-3 text-center">
+                <img src="/ProductImages/logo.png" alt="Logo" class="logo-img mb-2">
+                <h4 class="mb-0">MyResto Cashier</h4>
+                <small class="text-muted">Point of Sale System</small>
             </div>
-            <ul class="nav flex-column">
-                <li class="nav-item">@Html.ActionLink("💳 Proses Pembayaran", "ProcessPayment", "Cashier", null, new { @class = "nav-link text-white" })</li>
-                <li class="nav-item">@Html.ActionLink("🛍️ Detail Order", "TransactionHistory", "Cashier", null, new { @class = "nav-link text-white" })</li>
-                <li class="nav-item">@Html.ActionLink("🚪 Logout", "Logout", "Login", null, new { @class = "nav-link text-danger" })</li>
+            
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h6 class="text-center mb-0">@ViewBag.Username</h6>
+                <p class="text-center text-muted small mb-0">Cashier</p>
+            </div>
+            
+            <ul class="nav flex-column px-3">
+                <li class="nav-item">
+                    <a href="@Url.Action("ProcessPayment", "Cashier")" class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "ProcessPayment" ? "active" : "text-white")">
+                        <i class="fas fa-credit-card"></i> Process Payment
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="@Url.Action("TransactionHistory", "Cashier")" class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "TransactionHistory" ? "active" : "text-white")">
+                        <i class="fas fa-history"></i> Transaction History
+                    </a>
+                </li>
+                <li class="nav-item mt-4">
+                    <a href="@Url.Action("Logout", "Login")" class="nav-link text-danger">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </li>
             </ul>
         </nav>
 
         <!-- Main Content -->
         <div class="content p-4">
+            <!-- Real-time Clock -->
+            <div class="real-time-clock">
+                <i class="fas fa-clock"></i>
+                <span id="current-time">00:00:00</span>
+                <span id="current-date">Loading...</span>
+            </div>
+            
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb bg-white p-3 rounded shadow-sm">
+                    <li class="breadcrumb-item"><a href="@Url.Action("ProcessPayment", "Cashier")">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@ViewBag.Title</li>
+                </ol>
+            </nav>
+            
             @RenderBody()
+            
+            <!-- Footer -->
+            <footer class="sticky-footer bg-white mt-4">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright &copy; MyResto @DateTime.Now.Year</span>
+                    </div>
+                </div>
+            </footer>
         </div>
     </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    
+    <script>
+        // Toggle sidebar on mobile
+        $(document).ready(function() {
+            $("#sidebarToggleBtn").on("click", function(e) {
+                e.preventDefault();
+                $(".wrapper").toggleClass("sidebar-toggled");
+            });
+            
+            // Real-time clock function
+            function updateClock() {
+                const now = new Date();
+                
+                // Format time: HH:MM:SS
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                const timeString = `${hours}:${minutes}:${seconds}`;
+                
+                // Format date: Day, DD Month YYYY
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const dateString = now.toLocaleDateString('id-ID', options);
+                
+                // Update the DOM
+                $('#current-time').text(timeString);
+                $('#current-date').text(dateString);
+            }
+            
+            // Update clock immediately and then every second
+            updateClock();
+            setInterval(updateClock, 1000);
+        });
+    </script>
+    
     @RenderSection("Scripts", required: false)
-    <script src="~/Scripts/jquery.validate.min.js"></script>
-    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
 </body>
 </html>

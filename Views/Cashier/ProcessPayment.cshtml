@@ -6,169 +6,317 @@
     Layout = "~/Views/Layout/CashierLayout.cshtml";
 }
 
-<h2 class="text-center">Daftar Pesanan Pending</h2>
-
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success">
-        @TempData["SuccessMessage"]
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Process Payment</h1>
     </div>
-}
 
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger">
-        @TempData["ErrorMessage"]
-    </div>
-}
-
-<div class="table-responsive">
-    <table class="order-table table table-striped">
-        <thead>
-            <tr>
-                <th>Order ID</th>
-                <th>Customer Name</th>
-                <th>Order Date</th>
-                <th>Order Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var order in Model.PendingOrders)
-            {
-                <tr>
-                    <td>@order.orderID</td>
-                    <td>@order.customerName</td>
-                    <td>@(order.orderDate.HasValue ? order.orderDate.Value.ToString("dd/MM/yyyy HH:mm") : "-")</td>
-                    <td>@order.orderStatus</td>
-                    <td>
-                        @using (Html.BeginForm("ConfirmOrder", "Cashier", FormMethod.Post))
-                        {
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="orderId" value="@order.orderID" />
-                            <button type="submit" class="btn btn-primary btn-sm">Confirm</button>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
-
-<!-- Tabel Pesanan yang Sudah Dikonfirmasi -->
-<h3>Confirmed Orders</h3>
-<div class="table-responsive">
-    <table class="order-table table table-striped">
-        <thead>
-            <tr>
-                <th>Order ID</th>
-                <th>Customer Name</th>
-                <th>Order Date</th>
-                <th>Order Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var order in Model.ConfirmedOrders)
-            {
-                <tr>
-                    <td>@order.orderID</td>
-                    <td>@order.customerName</td>
-                    <td>@(order.orderDate.HasValue ? order.orderDate.Value.ToString("dd/MM/yyyy HH:mm") : "-")</td>
-                    <td>@order.orderStatus</td>
-                    <td>
-                        @using (Html.BeginForm("SelectOrder", "Cashier", FormMethod.Post))
-                        {
-                            <input type="hidden" name="orderId" value="@order.orderID" />
-                            <button type="submit" class="btn btn-info btn-sm">Select</button>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
-
-<!-- Detail Pesanan yang Dipilih -->
-<div class="selected-order-container mt-4">
-    <h3>Selected Order Details</h3>
-    <table class="order-table table table-striped">
-        <thead>
-            <tr>
-                <th>Customer Name</th>
-                <th>Product Name</th>
-                <th>Quantity</th>
-                <th>Subtotal</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var detail in Model.SelectedOrderDetails)
-            {
-                <tr>
-                    <td>@detail.CustomerName</td>
-                    <td>@detail.ProductName</td>
-                    <td>@detail.Quantity</td>
-                    <td>Rp @detail.Subtotal.ToString("N0")</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
-
-<!-- Input untuk Pembayaran -->
-<div class="payment-section mt-4">
-    <h3 class="mb-3">Payment</h3>
-    
-    @using (Html.BeginForm("ProcessPayment", "Cashier", FormMethod.Post, new { id = "paymentForm" }))
+    <!-- Alerts Section -->
+    @if (TempData["SuccessMessage"] != null)
     {
-        if (Model.SelectedOrderDetails.Any())
-        {
-            <input type="hidden" name="orderId" value="@Model.SelectedOrderDetails.First().OrderID" />
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
-            <!-- Total Amount -->
-            <div class="mb-2">
-                <label class="fw-bold">Total Amount:</label>
-                <span class="ms-2 text-danger fw-bold">Rp @Model.TotalAmount.ToString("N0")</span>
-                <input type="hidden" id="totalAmountValue" value="@Model.TotalAmount" />
-            </div>
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
-            <!-- Amount Paid -->
-            <div class="mb-2">
-                <label for="amountPaid" class="form-label">Amount Paid:</label>
-                <input type="text" id="amountPaid" name="amountPaid" class="form-control" placeholder="Masukkan nominal" required />
-                <div id="amountPaidFeedback" class="invalid-feedback">
-                    Amount paid must be greater than or equal to the total amount.
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Pending Orders Card -->
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-clock me-2"></i>Pending Orders
+                    </h6>
+                    <!-- Search Box -->
+                    <div class="search-box">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" id="orderSearchInput" class="form-control" placeholder="Search by Order ID or Customer Name...">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered" id="pendingOrdersTable">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer Name</th>
+                                    <th>Order Date</th>
+                                    <th>Order Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var order in Model.PendingOrders)
+                                {
+                                    <tr>
+                                        <td><span class="order-id">@order.orderID</span></td>
+                                        <td>@order.customerName</td>
+                                        <td>@(order.orderDate.HasValue ? order.orderDate.Value.ToString("dd/MM/yyyy HH:mm") : "-")</td>
+                                        <td><span class="badge bg-warning text-dark">@order.orderStatus</span></td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                @using (Html.BeginForm("ConfirmOrder", "Cashier", FormMethod.Post, new { @class = "me-2" }))
+                                                {
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="orderId" value="@order.orderID" />
+                                                    <button type="submit" class="btn btn-primary btn-sm">
+                                                        <i class="fas fa-check me-1"></i>Confirm
+                                                    </button>
+                                                }
+                                                
+                                                @using (Html.BeginForm("CancelOrder", "Cashier", FormMethod.Post))
+                                                {
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="orderId" value="@order.orderID" />
+                                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to cancel this order?');">
+                                                        <i class="fas fa-times me-1"></i>Cancel
+                                                    </button>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                                @if (!Model.PendingOrders.Any())
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">
+                                            <i class="fas fa-info-circle fa-2x mb-3 text-gray-300"></i>
+                                            <p class="mb-0">No pending orders found</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Change -->
-            <div class="mb-2">
-                <label for="change" class="form-label">Change:</label>
-                <input type="text" id="change" class="form-control" readonly />
+        <!-- Confirmed Orders Card -->
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-check-circle me-2"></i>Confirmed Orders
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered" id="confirmedOrdersTable">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer Name</th>
+                                    <th>Order Date</th>
+                                    <th>Order Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var order in Model.ConfirmedOrders)
+                                {
+                                    <tr>
+                                        <td><span class="order-id">@order.orderID</span></td>
+                                        <td>@order.customerName</td>
+                                        <td>@(order.orderDate.HasValue ? order.orderDate.Value.ToString("dd/MM/yyyy HH:mm") : "-")</td>
+                                        <td><span class="badge bg-success">@order.orderStatus</span></td>
+                                        <td>
+                                            @using (Html.BeginForm("SelectOrder", "Cashier", FormMethod.Post))
+                                            {
+                                                <input type="hidden" name="orderId" value="@order.orderID" />
+                                                <button type="submit" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-hand-pointer me-1"></i>Select
+                                                </button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                                @if (!Model.ConfirmedOrders.Any())
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">
+                                            <i class="fas fa-info-circle fa-2x mb-3 text-gray-300"></i>
+                                            <p class="mb-0">No confirmed orders found</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <!-- Buttons -->
-            <div class="d-flex gap-2 mt-3">
-                <button type="button" id="btnCalculate" class="btn btn-secondary px-4">Calculate Change</button>
-                <button type="submit" id="btnCompletePayment" class="btn btn-success px-4">Complete Payment</button>
+        <!-- Order Details and Payment Section -->
+        <div class="col-md-6">
+            <!-- Selected Order Details Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-shopping-cart me-2"></i>Selected Order Details
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.SelectedOrderDetails.Any())
+                    {
+                        <div class="order-summary mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted">Order ID:</span>
+                                <span class="fw-bold">@Model.SelectedOrderDetails.First().OrderID</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Customer:</span>
+                                <span class="fw-bold">@Model.SelectedOrderDetails.First().CustomerName</span>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th class="text-center">Qty</th>
+                                        <th class="text-end">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var detail in Model.SelectedOrderDetails)
+                                    {
+                                        <tr>
+                                            <td>@detail.ProductName</td>
+                                            <td class="text-center">@detail.Quantity</td>
+                                            <td class="text-end">Rp @detail.Subtotal.ToString("N0")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="2" class="text-end">Total:</th>
+                                        <th class="text-end text-danger">Rp @Model.TotalAmount.ToString("N0")</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-shopping-cart fa-3x mb-3 text-gray-300"></i>
+                            <p>No order selected</p>
+                            <p class="text-muted">Please select an order from the confirmed orders list</p>
+                        </div>
+                    }
+                </div>
             </div>
-        }
-        else
-        {
-            <div class="alert alert-info">
-                Please select an order from the confirmed orders list to process payment.
+        </div>
+
+        <div class="col-md-6">
+            <!-- Payment Form Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-money-bill-wave me-2"></i>Payment
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @using (Html.BeginForm("ProcessPayment", "Cashier", FormMethod.Post, new { id = "paymentForm", @class = "payment-form" }))
+                    {
+                        if (Model.SelectedOrderDetails.Any())
+                        {
+                            <input type="hidden" name="orderId" value="@Model.SelectedOrderDetails.First().OrderID" />
+
+                            <div class="total-amount-display mb-4">
+                                <span class="total-label">Total Amount</span>
+                                <span class="total-value">Rp @Model.TotalAmount.ToString("N0")</span>
+                                <input type="hidden" id="totalAmountValue" value="@Model.TotalAmount" />
+                            </div>
+
+                            <!-- Payment Form Card section - only showing the relevant part -->
+                            <div class="mb-3">
+                                <label for="amountPaid" class="form-label">Amount Paid</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">Rp</span>
+                                    <input type="text" id="amountPaid" class="form-control" placeholder="Enter amount" required />
+                                    <input type="hidden" id="amountPaidHidden" name="amountPaid" value="0" />
+                                </div>
+                                <div id="amountPaidFeedback" class="invalid-feedback">
+                                    Amount paid must be greater than or equal to the total amount.
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="change" class="form-label">Change</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">Rp</span>
+                                    <input type="text" id="change" class="form-control" readonly />
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="button" id="btnCalculate" class="btn btn-secondary">
+                                    <i class="fas fa-calculator me-2"></i>Calculate Change
+                                </button>
+                                <button type="submit" id="btnCompletePayment" class="btn btn-success">
+                                    <i class="fas fa-check-circle me-2"></i>Complete Payment
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-4">
+                                <i class="fas fa-hand-pointer fa-3x mb-3 text-gray-300"></i>
+                                <p>Ready to process payment</p>
+                                <p class="text-muted">Please select an order from the confirmed orders list</p>
+                            </div>
+                        }
+                    }
+                </div>
             </div>
-        }
-    }
+        </div>
+    </div>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var amountPaidInput = document.getElementById('amountPaid');
+        var amountPaidHidden = document.getElementById('amountPaidHidden');
         var btnCalculate = document.getElementById('btnCalculate');
         var btnCompletePayment = document.getElementById('btnCompletePayment');
         
         if (amountPaidInput && btnCalculate && btnCompletePayment) {
+            // Format input as currency
+            amountPaidInput.addEventListener('input', function(e) {
+                // Remove non-numeric characters
+                let value = this.value.replace(/[^\d]/g, '');
+                
+                // Store the raw numeric value in the hidden field
+                if (value) {
+                    amountPaidHidden.value = value;
+                } else {
+                    amountPaidHidden.value = "0";
+                }
+                
+                // Format with thousand separators
+                if (value.length > 0) {
+                    value = parseInt(value, 10).toLocaleString('id-ID');
+                }
+                
+                this.value = value;
+                validateAmount();
+            });
+            
             // Calculate change when button is clicked
             btnCalculate.addEventListener('click', calculateChange);
             
@@ -176,17 +324,27 @@
             document.getElementById('paymentForm').addEventListener('submit', function(event) {
                 if (!validateAmount()) {
                     event.preventDefault();
+                    return false;
                 }
-            });
-            
-            // Validate on input change
-            amountPaidInput.addEventListener('input', function() {
-                validateAmount();
+                
+                // Final check to ensure we have a valid decimal value
+                try {
+                    var finalValue = parseFloat(amountPaidHidden.value);
+                    if (isNaN(finalValue)) {
+                        event.preventDefault();
+                        return false;
+                    }
+                    // Update the hidden field with the decimal value
+                    amountPaidHidden.value = finalValue.toString();
+                } catch (e) {
+                    event.preventDefault();
+                    return false;
+                }
             });
         }
         
         function calculateChange() {
-            var amountPaid = parseFloat(amountPaidInput.value.replace(/,/g, '')) || 0;
+            var amountPaid = parseFloat(amountPaidHidden.value) || 0;
             var totalAmount = parseFloat(document.getElementById('totalAmountValue').value) || 0;
             var change = amountPaid - totalAmount;
             
@@ -196,7 +354,7 @@
                 document.getElementById('amountPaidFeedback').style.display = 'block';
                 btnCompletePayment.disabled = true;
             } else {
-                document.getElementById('change').value = "Rp " + change.toLocaleString('id-ID');
+                document.getElementById('change').value = change.toLocaleString('id-ID');
                 amountPaidInput.classList.remove('is-invalid');
                 document.getElementById('amountPaidFeedback').style.display = 'none';
                 btnCompletePayment.disabled = false;
@@ -204,7 +362,7 @@
         }
         
         function validateAmount() {
-            var amountPaid = parseFloat(amountPaidInput.value.replace(/,/g, '')) || 0;
+            var amountPaid = parseFloat(amountPaidHidden.value) || 0;
             var totalAmount = parseFloat(document.getElementById('totalAmountValue').value) || 0;
             
             if (amountPaid < totalAmount) {
@@ -218,6 +376,73 @@
                 btnCompletePayment.disabled = false;
                 return true;
             }
+        }
+        
+        // Enhanced Search functionality
+        var searchInput = document.getElementById('orderSearchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                var searchValue = this.value.toLowerCase();
+                var tables = ['pendingOrdersTable', 'confirmedOrdersTable'];
+                
+                tables.forEach(function(tableId) {
+                    var table = document.getElementById(tableId);
+                    if (table) {
+                        var rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+                        var found = false;
+                        
+                        for (var i = 0; i < rows.length; i++) {
+                            var rowText = rows[i].textContent.toLowerCase();
+                            
+                            if (rowText.indexOf(searchValue) > -1) {
+                                rows[i].style.display = "";
+                                rows[i].classList.add('highlight-search');
+                                setTimeout(function(row) {
+                                    row.classList.remove('highlight-search');
+                                }, 1500, rows[i]);
+                                found = true;
+                            } else {
+                                rows[i].style.display = "none";
+                            }
+                        }
+                        
+                        // Show no results message if needed
+                        var noResultsRow = table.querySelector('.no-results-row');
+                        if (!found && searchValue.length > 0) {
+                            if (!noResultsRow) {
+                                var tbody = table.getElementsByTagName('tbody')[0];
+                                noResultsRow = document.createElement('tr');
+                                noResultsRow.className = 'no-results-row';
+                                noResultsRow.innerHTML = '<td colspan="5" class="text-center py-3">No results found for "<span class="fw-bold">' + searchValue + '</span>"</td>';
+                                tbody.appendChild(noResultsRow);
+                            } else {
+                                noResultsRow.style.display = "";
+                                noResultsRow.querySelector('td').innerHTML = 'No results found for "<span class="fw-bold">' + searchValue + '</span>"';
+                            }
+                        } else if (noResultsRow) {
+                            noResultsRow.style.display = "none";
+                        }
+                    }
+                });
+                
+                // Update search icon based on results
+                var searchIcon = searchInput.previousElementSibling.querySelector('i');
+                if (searchValue.length > 0) {
+                    searchIcon.className = 'fas fa-times';
+                    searchIcon.parentElement.style.cursor = 'pointer';
+                    searchIcon.parentElement.onclick = function() {
+                        searchInput.value = '';
+                        searchInput.dispatchEvent(new Event('keyup'));
+                        searchIcon.className = 'fas fa-search';
+                        searchIcon.parentElement.style.cursor = 'default';
+                        searchIcon.parentElement.onclick = null;
+                    };
+                } else {
+                    searchIcon.className = 'fas fa-search';
+                    searchIcon.parentElement.style.cursor = 'default';
+                    searchIcon.parentElement.onclick = null;
+                }
+            });
         }
     });
 </script>

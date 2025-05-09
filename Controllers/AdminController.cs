@@ -585,6 +585,7 @@ namespace MyResto2.Controllers
             ViewBag.TotalRevenue = orders.Sum(o => o.total);
             ViewBag.CompletedOrders = orders.Count(o => o.orderStatus == "completed");
             ViewBag.PendingOrders = orders.Count(o => o.orderStatus == "pending");
+            ViewBag.CanceledOrders = orders.Count(o => o.orderStatus == "canceled");
             
             // Pass filter values to view for maintaining state
             ViewBag.StartDate = startDate.Value.ToString("yyyy-MM-dd");

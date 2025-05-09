@@ -9,9 +9,28 @@
     </div>
     <div class="col-md-6 text-md-right">
         <h6>Status: 
-            <span class="badge badge-@(Model.OrderHeader.OrderStatus == "completed" ? "success" : 
-                                      Model.OrderHeader.OrderStatus == "cancelled" ? "danger" : "secondary")">
-                @Model.OrderHeader.OrderStatus
+            @{
+                string badgeClass = "";
+                string statusIcon = "";
+                
+                if (Model.OrderHeader.OrderStatus.ToLower() == "completed")
+                {
+                    badgeClass = "bg-success text-white";
+                    statusIcon = "fa-check-circle";
+                }
+                else if (Model.OrderHeader.OrderStatus.ToLower() == "canceled" || Model.OrderHeader.OrderStatus.ToLower() == "cancelled")
+                {
+                    badgeClass = "bg-danger text-white";
+                    statusIcon = "fa-times-circle";
+                }
+                else
+                {
+                    badgeClass = "bg-secondary text-white";
+                    statusIcon = "fa-clock";
+                }
+            }
+            <span class="badge rounded-pill @badgeClass">
+                <i class="fas @statusIcon me-1"></i> @Model.OrderHeader.OrderStatus
             </span>
         </h6>
         <h6>Cashier: <span class="font-weight-normal">@Model.OrderHeader.CashierName</span></h6>
